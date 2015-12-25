@@ -38,27 +38,35 @@ co(function * () {
     /*  load my own information  */
     var my = require("./package.json")
 
-    /*  automatic update notification  */
+    /*  automatic update notification (with 2 days check interval)  */
     var notifier = UN({ pkg: my, updateCheckInterval: 1000 * 60 * 60 * 24 * 2 })
     notifier.notify()
 
     /*  command-line option parsing  */
     var argv = yargs
         .usage("Usage: $0 [-h] [-V] [-q] [-n] [-C] [-m <name>] [-f <file>] [-g] [<pattern> ...]")
-        .help("h").alias("h", "help").default("h", false).describe("h", "show usage help")
-        .boolean("V").alias("V", "version").default("V", false).describe("V", "show program version information")
-        .boolean("q").alias("q", "quiet").default("q", false).describe("q", "quiet operation (do not output upgrade information)")
-        .boolean("n").alias("n", "nop").default("n", false).describe("n", "no operation (do not modify package configuration file)")
-        .boolean("C").alias("C", "noColor").default("C", false).describe("C", "do not use any colors in output")
-        .string("m").nargs("m", 1).alias("m", "manager").default("m", "-").describe("m", "package manager to use (\"npm\" or \"bower\")")
-        .string("f").nargs("f", 1).alias("f", "file").default("f", "-").describe("f", "package configuration to use (\"package.json\" or \"bower.json\")")
-        .boolean("g").alias("g", "greatest").default("g", false).describe("g", "use greatest version (instead of latest stable one)")
+        .help("h").alias("h", "help").default("h", false)
+            .describe("h", "show usage help")
+        .boolean("V").alias("V", "version").default("V", false)
+            .describe("V", "show program version information")
+        .boolean("q").alias("q", "quiet").default("q", false)
+            .describe("q", "quiet operation (do not output upgrade information)")
+        .boolean("n").alias("n", "nop").default("n", false)
+            .describe("n", "no operation (do not modify package configuration file)")
+        .boolean("C").alias("C", "noColor").default("C", false)
+            .describe("C", "do not use any colors in output")
+        .string("m").nargs("m", 1).alias("m", "manager").default("m", "-")
+            .describe("m", "package manager to use (\"npm\" or \"bower\")")
+        .string("f").nargs("f", 1).alias("f", "file").default("f", "-")
+            .describe("f", "package configuration to use (\"package.json\" or \"bower.json\")")
+        .boolean("g").alias("g", "greatest").default("g", false)
+            .describe("g", "use greatest version (instead of latest stable one)")
         .strict()
         .showHelpOnFail(true)
         .demand(0)
         .parse(process.argv.slice(2))
 
-    /*  short-circuit some options  */
+    /*  short-circuit processing of "-V" command-line option  */
     if (argv.version) {
         process.stderr.write(my.name + " " + my.version + " <" + my.homepage + ">\n")
         process.stderr.write(my.description + "\n")
@@ -77,7 +85,7 @@ co(function * () {
     else if (argv.manager === "-")
         argv.manager = (argv.file.match(/bower/) ? "bower" : "npm")
 
-    /*  read old configuration file */
+    /*  read old configuration file  */
     if (!fs.existsSync(argv.file))
         throw "cannot find NPM package configuration file under path \"" + argv.file + "\""
     var pkgData = fs.readFileSync(argv.file, { encoding: "utf8" })
@@ -89,10 +97,15 @@ co(function * () {
         vManager = require("npm/package.json").version
     else if (argv.manager === "bower")
         vManager = require("bower/package.json").version
+    else
+        throw "invalid package manager \"" + argv.manager + "\""
 
     /*  provide package manager and package configuration information  */
     var table = new Table({
-        head: [ chalk.reset.bold("PACKAGE MANAGER"), chalk.reset.bold("PACKAGE CONFIGURATION") ],
+        head: [
+            chalk.reset.bold("PACKAGE MANAGER"),
+            chalk.reset.bold("PACKAGE CONFIGURATION")
+        ],
         colWidths: [ 20, 55 ],
         style: { "padding-left": 1, "padding-right": 1, border: [ "grey" ], compact: true },
         chars: { "left-mid": "", "mid": "", "mid-mid": "", "right-mid": "" },
@@ -117,7 +130,7 @@ co(function * () {
         args:           []
     })
 
-    /*  prepare for a nice-looking table output  */
+    /*  prepare for a nice-looking table output of the dependency upgrades  */
     table = new Table({
         head: [
             chalk.reset.bold("MODULE NAME"),
@@ -132,7 +145,7 @@ co(function * () {
     /*  parse configuration file content  */
     var pkg = JSON.parse(pkgData)
 
-    /*  iterate over the new dependencies  */
+    /*  iterate over the upgraded dependencies  */
     var mods = Object.keys(json)
     mods.forEach(function (mod) {
         /*  determine new and old version  */
@@ -154,7 +167,7 @@ co(function * () {
             micromatch([ mod ], (argv._[0].match(/^!/) !== null ? [ "*" ] : []).concat(argv._)).length > 0
         )
 
-        /*  utility function: mark a piece of text against an other one  */
+        /*  utility function: mark a piece of text against another one  */
         var mark = function (color, text, other) {
             var result = diff(text, other)
             var output = ""
@@ -187,7 +200,7 @@ co(function * () {
     if (!argv.quiet) {
         if (mods.length === 0) {
             table = new Table({
-                head: [ ],
+                head: [],
                 colWidths: [ 76 ],
                 colAligns: [ "middle" ],
                 style: { "padding-left": 1, "padding-right": 1, border: [ "grey" ], compact: true },
