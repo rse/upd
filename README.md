@@ -22,6 +22,8 @@ formatting of the existing JSON syntax.
 Example
 -------
 
+![UPD usage](screenshot.png)
+
 Installation
 ------------
 
