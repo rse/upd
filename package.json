@@ -1,0 +1,46 @@
+{
+    "name":        "upd",
+    "homepage":    "http://github.com/rse/upd",
+    "description": "Upgrade Package Dependencies",
+    "version":     "0.9.0",
+    "license":     "MIT",
+    "author": {
+        "name":    "Ralf S. Engelschall",
+        "email":   "rse@engelschall.com",
+        "url":     "http://engelschall.com"
+    },
+    "keywords": [
+        "upgrade", "package", "dependency", "npm", "package.json", "bower", "bower.json"
+    ],
+    "repository": {
+        "type": "git",
+        "url":  "git://github.com/rse/upd.git"
+    },
+    "bugs": {
+        "url":  "http://github.com/rse/upd/issues"
+    },
+    "bin": {
+        "upd": "./upd.js"
+    },
+    "devDependencies": {
+        "grunt":                "~0.4.5",
+        "grunt-cli":            "~0.1.13",
+        "grunt-contrib-jshint": "~0.11.3",
+        "grunt-contrib-clean":  "~0.7.0",
+        "grunt-eslint":         "~17.3.1",
+        "babel-eslint":         "~4.1.6"
+    },
+    "dependencies" : {
+        "npm-check-updates":    "~2.5.5",
+        "bower":                "~1.7.1",
+        "co":                   "~4.6.0",
+        "fast-diff":            "~1.0.1",
+        "cli-table":            "~0.3.1",
+        "escape-string-regexp": "~1.0.4",
+        "chalk":                "~1.1.1",
+        "micromatch":           "~2.3.7"
+    },
+    "engines": {
+        "node":                 ">=4.0.0"
+    }
+}
