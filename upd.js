@@ -32,8 +32,16 @@ var diff       = require("fast-diff")
 var Table      = require("cli-table")
 var escRE      = require("escape-string-regexp")
 var micromatch = require("micromatch")
+var UN         = require("update-notifier")
 
 co(function * () {
+    /*  load my own information  */
+    var my = require("./package.json")
+
+    /*  automatic update notification  */
+    var notifier = UN({ pkg: my, updateCheckInterval: 1000 * 60 * 60 * 24 * 2 })
+    notifier.notify()
+
     /*  command-line option parsing  */
     var argv = yargs
         .usage("Usage: $0 [-h] [-V] [-q] [-n] [-C] [-m <name>] [-f <file>] [-g] [<pattern> ...]")
@@ -52,7 +60,6 @@ co(function * () {
 
     /*  short-circuit some options  */
     if (argv.version) {
-        var my = require("./package.json")
         process.stderr.write(my.name + " " + my.version + " <" + my.homepage + ">\n")
         process.stderr.write(my.description + "\n")
         process.stderr.write("Copyright (c) 2015 " + my.author.name + " <" + my.author.url + ">\n")
@@ -149,7 +156,7 @@ co(function * () {
 
         /*  utility function: mark a piece of text against an other one  */
         var mark = function (color, text, other) {
-            var result = diff(text, other);
+            var result = diff(text, other)
             var output = ""
             result.forEach(function (chunk) {
                 if (chunk[0] === diff.INSERT)
