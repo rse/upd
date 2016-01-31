@@ -20,7 +20,7 @@
         "url":  "http://github.com/rse/upd/issues"
     },
     "bin": {
-        "upd": "./upd.js"
+        "upd":  "./upd.js"
     },
     "devDependencies": {
         "grunt":                "~0.4.5",
@@ -32,9 +32,9 @@
     },
     "dependencies" : {
         "yargs":                "~3.32.0",
-        "npm-check-updates":    "~2.5.6",
+        "npm-check-updates":    "~2.5.7",
         "update-notifier":      "~0.6.0",
-        "bower":                "~1.7.2",
+        "bower":                "~1.7.7",
         "co":                   "~4.6.0",
         "fast-diff":            "~1.0.1",
         "cli-table":            "~0.3.1",
