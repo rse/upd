@@ -2,7 +2,7 @@
     "name":        "upd",
     "homepage":    "http://github.com/rse/upd",
     "description": "Upgrade Package Dependencies",
-    "version":     "0.9.7",
+    "version":     "0.9.8",
     "license":     "MIT",
     "author": {
         "name":    "Ralf S. Engelschall",
@@ -28,7 +28,7 @@
         "grunt-contrib-jshint": "~0.12.0",
         "grunt-contrib-clean":  "~0.7.0",
         "grunt-eslint":         "~17.3.1",
-        "babel-eslint":         "~4.1.6"
+        "babel-eslint":         "~4.1.8"
     },
     "dependencies" : {
         "yargs":                "~3.32.0",
