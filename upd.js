@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /*!
 **  UPD -- Upgrade Package Dependencies (UPD)
 **  Copyright (c) 2015-2016 Ralf S. Engelschall <rse@engelschall.com>
