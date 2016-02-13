@@ -121,7 +121,7 @@ co(function * () {
 
     /*  let "npm-check-updates" do the heavy lifting of
         determining the latest NPM module versions  */
-    var json = yield ncu.run({
+    var json = yield (ncu.run({
         json:           true,
         jsonUpgraded:   true,
         loglevel:       "silent",
@@ -129,7 +129,7 @@ co(function * () {
         packageManager: argv.manager,
         greatest:       argv.greatest,
         args:           []
-    })
+    }))
 
     /*  prepare for a nice-looking table output of the dependency upgrades  */
     table = new Table({
