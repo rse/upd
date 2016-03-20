@@ -2,7 +2,7 @@
     "name":        "upd",
     "homepage":    "http://github.com/rse/upd",
     "description": "Upgrade Package Dependencies",
-    "version":     "1.0.2",
+    "version":     "1.0.3",
     "license":     "MIT",
     "author": {
         "name":    "Ralf S. Engelschall",
@@ -31,9 +31,9 @@
         "babel-eslint":         "~5.0.0"
     },
     "dependencies" : {
-        "yargs":                "~4.2.0",
+        "yargs":                "~4.3.2",
         "npm-check-updates":    "~2.5.8",
-        "update-notifier":      "~0.6.0",
+        "update-notifier":      "~0.6.3",
         "bower":                "~1.7.7",
         "co":                   "~4.6.0",
         "fast-diff":            "~1.0.1",
