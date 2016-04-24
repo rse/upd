@@ -28,11 +28,11 @@
         "grunt-contrib-jshint": "~1.0.0",
         "grunt-contrib-clean":  "~1.0.0",
         "grunt-eslint":         "~18.1.0",
-        "babel-eslint":         "~6.0.2"
+        "babel-eslint":         "~6.0.3"
     },
     "dependencies" : {
         "yargs":                "~4.6.0",
-        "npm-check-updates":    "~2.6.2",
+        "npm-check-updates":    "~2.6.3",
         "update-notifier":      "~0.6.3",
         "bower":                "~1.7.9",
         "co":                   "~4.6.0",
@@ -40,7 +40,7 @@
         "cli-table":            "~0.3.1",
         "escape-string-regexp": "~1.0.5",
         "chalk":                "~1.1.3",
-        "micromatch":           "~2.3.7"
+        "micromatch":           "~2.3.8"
     },
     "engines": {
         "node":                 ">=4.0.0"
