@@ -28,12 +28,12 @@
         "grunt-contrib-jshint": "~1.0.0",
         "grunt-contrib-clean":  "~1.0.0",
         "grunt-eslint":         "~18.1.0",
-        "babel-eslint":         "~6.0.3"
+        "babel-eslint":         "~6.0.4"
     },
     "dependencies" : {
-        "yargs":                "~4.6.0",
-        "npm-check-updates":    "~2.6.3",
-        "update-notifier":      "~0.6.3",
+        "yargs":                "~4.7.0",
+        "npm-check-updates":    "~2.6.4",
+        "update-notifier":      "~0.7.0",
         "bower":                "~1.7.9",
         "co":                   "~4.6.0",
         "fast-diff":            "~1.0.1",
