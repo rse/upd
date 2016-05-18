@@ -31,8 +31,8 @@
         "babel-eslint":         "~6.0.4"
     },
     "dependencies" : {
-        "yargs":                "~4.7.0",
-        "npm-check-updates":    "~2.6.4",
+        "yargs":                "~4.7.1",
+        "npm-check-updates":    "~2.6.5",
         "update-notifier":      "~0.7.0",
         "bower":                "~1.7.9",
         "co":                   "~4.6.0",
