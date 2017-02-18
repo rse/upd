@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /*!
 **  UPD -- Upgrade Package Dependencies (UPD)
-**  Copyright (c) 2015-2016 Ralf S. Engelschall <rse@engelschall.com>
+**  Copyright (c) 2015-2017 Ralf S. Engelschall <rse@engelschall.com>
 **
 **  Permission is hereby granted, free of charge, to any person obtaining
 **  a copy of this software and associated documentation files (the
@@ -71,7 +71,7 @@ co(function * () {
     if (argv.version) {
         process.stderr.write(my.name + " " + my.version + " <" + my.homepage + ">\n")
         process.stderr.write(my.description + "\n")
-        process.stderr.write("Copyright (c) 2015 " + my.author.name + " <" + my.author.url + ">\n")
+        process.stderr.write("Copyright (c) 2015-2017 " + my.author.name + " <" + my.author.url + ">\n")
         process.stderr.write("Licensed under " + my.license + " <http://spdx.org/licenses/" + my.license + ".html>\n")
         process.exit(0)
     }
