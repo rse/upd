@@ -92,6 +92,9 @@ co(function * () {
     var pkgData = fs.readFileSync(argv.file, { encoding: "utf8" })
     var pkgDataOld = pkgData
 
+    /*  parse configuration file content  */
+    var pkg = JSON.parse(pkgData)
+
     /*  determine package manager version  */
     var vManager = "0.0.0"
     if (argv.manager === "npm")
@@ -119,13 +122,26 @@ co(function * () {
     if (!argv.quiet)
         process.stdout.write(output + "\n")
 
+    /*  generate special variant of package.json for "npm-check-updates",
+        as it is unwilling to pickup peerDependencies, etc  */
+    let pkgOut = { dependencies: {} }
+    const mixin = (name) => {
+        if (typeof pkg[name] === "object")
+            Object.assign(pkgOut.dependencies, pkg[name])
+    }
+    mixin("optionalDependencies")
+    mixin("peerDependencies")
+    mixin("devDependencies")
+    mixin("dependencies")
+    pkgOut = JSON.stringify(pkgOut)
+
     /*  let "npm-check-updates" do the heavy lifting of
         determining the latest NPM module versions  */
     var json = yield (ncu.run({
         json:           true,
         jsonUpgraded:   true,
         loglevel:       "silent",
-        packageData:    pkgData,
+        packageData:    pkgOut,
         packageManager: argv.manager,
         greatest:       argv.greatest,
         args:           []
@@ -142,9 +158,6 @@ co(function * () {
         style: { "padding-left": 1, "padding-right": 1, border: [ "grey" ], compact: true },
         chars: { "left-mid": "", "mid": "", "mid-mid": "", "right-mid": "" }
     })
-
-    /*  parse configuration file content  */
-    var pkg = JSON.parse(pkgData)
 
     /*  iterate over the upgraded dependencies  */
     var mods = Object.keys(json)
