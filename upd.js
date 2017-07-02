@@ -29,6 +29,7 @@ var yargs      = require("yargs")
 var co         = require("co")
 var ncu        = require("npm-check-updates")
 var chalk      = require("chalk")
+var stripAnsi  = require("strip-ansi")
 var diff       = require("fast-diff")
 var Table      = require("cli-table")
 var escRE      = require("escape-string-regexp")
@@ -118,7 +119,7 @@ co(function * () {
     table.push([ argv.manager + " " + vManager, argv.file ])
     var output = table.toString()
     if (argv.noColor)
-        output = chalk.stripColor(output)
+        output = stripAnsi(output)
     if (!argv.quiet)
         process.stdout.write(output + "\n")
 
@@ -227,7 +228,7 @@ co(function * () {
         else {
             output = table.toString()
             if (argv.noColor)
-                output = chalk.stripColor(output)
+                output = stripAnsi(output)
             process.stdout.write(output + "\n")
         }
     }
