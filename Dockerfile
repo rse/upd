@@ -22,34 +22,39 @@
 ##  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ##
 
-NPM     = npm
-GRUNT   = ./node_modules/grunt-cli/bin/grunt
-DOCKER  = docker
-JQ      = jq
+ARG        NODE_VERSION=8-alpine
 
-VERSION = `$(JQ) -r .version package.json`
+FROM       node:${NODE_VERSION}
 
-all: build
+ENV        NPM_CONFIG_LOGLEVEL=error
 
-bootstrap:
-	@if [ ! -x $(GRUNT) ]; then $(NPM) install; fi
+ARG        UPD_VERSION=latest
+ENV        UPD_VERSION=${UPD_VERSION}
 
-build: bootstrap
-	@$(GRUNT)
+LABEL      maintainer="Ralf S. Engelschall <rse@engelschall.com>" \
+           usage="docker run --rm -i -t -v \$PWD:/pwd -e TERM engelschall/upd [<options>]"
 
-clean: bootstrap
-	@$(GRUNT) clean:clean
+WORKDIR    /app
 
-distclean: bootstrap
-	@$(GRUNT) clean:clean clean:distclean
+COPY       . .
 
-docker-build:
-	@$(DOCKER) build --build-arg UPD_VERSION=$(VERSION) -t engelschall/upd:latest -t engelschall/upd:$(VERSION) .
-docker-inspect:
-	@$(DOCKER) run --rm -i -t -v $$PWD:/pwd -e TERM --entrypoint /bin/sh engelschall/upd:$(VERSION)
-docker-run:
-	@$(DOCKER) run --rm -i -t -v $$PWD:/pwd -e TERM engelschall/upd:$(VERSION)
-docker-push:
-	@$(DOCKER) push engelschall/upd:$(VERSION)
-	@$(DOCKER) push engelschall/upd:latest
+RUN        npm install; \
+           npm cache clear --force; \
+           rm -f package-lock.json; \
+           find node_modules -name "test"       -type d -print | xargs rm -rf; \
+           find node_modules -name "tests"      -type d -print | xargs rm -rf; \
+           find node_modules -name "example"    -type d -print | xargs rm -rf; \
+           find node_modules -name "examples"   -type d -print | xargs rm -rf; \
+           find node_modules -name "README"     -type f -print | xargs rm -f; \
+           find node_modules -name "README.md"  -type f -print | xargs rm -f; \
+           find node_modules -name "LICENSE"    -type f -print | xargs rm -f; \
+           find node_modules -name "LICENSE.md" -type f -print | xargs rm -f
+
+WORKDIR    /pwd
+
+VOLUME     [ "/pwd" ]
+
+USER       node:node
+
+ENTRYPOINT [ "node", "--", "/app/upd.js" ]
 
