@@ -24,28 +24,29 @@
 */
 
 /*  external requirements  */
-var fs         = require("fs")
-var yargs      = require("yargs")
-var co         = require("co")
-var ncu        = require("npm-check-updates")
-var chalk      = require("chalk")
-var stripAnsi  = require("strip-ansi")
-var diff       = require("fast-diff")
-var Table      = require("cli-table")
-var escRE      = require("escape-string-regexp")
-var micromatch = require("micromatch")
-var UN         = require("update-notifier")
+const fs          = require("fs")
+const yargs       = require("yargs")
+const co          = require("co")
+const chalk       = require("chalk")
+const stripAnsi   = require("strip-ansi")
+const diff        = require("fast-diff")
+const Table       = require("cli-table")
+const escRE       = require("escape-string-regexp")
+const micromatch  = require("micromatch")
+const UN          = require("update-notifier")
+const packageJson = require("package-json")
+const semver      = require("semver")
 
-co(function * () {
+;(async () => {
     /*  load my own information  */
-    var my = require("./package.json")
+    const my = require("./package.json")
 
     /*  automatic update notification (with 2 days check interval)  */
     var notifier = UN({ pkg: my, updateCheckInterval: 1000 * 60 * 60 * 24 * 2 })
     notifier.notify()
 
     /*  command-line option parsing  */
-    var argv = yargs
+    let argv = yargs
         .usage("Usage: $0 [-h] [-V] [-q] [-n] [-C] [-m <name>] [-f <file>] [-g] [<pattern> ...]")
         .help("h").alias("h", "help").default("h", false)
             .describe("h", "show usage help")
@@ -57,8 +58,6 @@ co(function * () {
             .describe("n", "no operation (do not modify package configuration file)")
         .boolean("C").alias("C", "noColor").default("C", false)
             .describe("C", "do not use any colors in output")
-        .string("m").nargs("m", 1).alias("m", "manager").default("m", "-")
-            .describe("m", "package manager to use (\"npm\" or \"bower\")")
         .string("f").nargs("f", 1).alias("f", "file").default("f", "-")
             .describe("f", "package configuration to use (\"package.json\" or \"bower.json\")")
         .boolean("g").alias("g", "greatest").default("g", false)
@@ -72,81 +71,58 @@ co(function * () {
     if (argv.version) {
         process.stderr.write(my.name + " " + my.version + " <" + my.homepage + ">\n")
         process.stderr.write(my.description + "\n")
-        process.stderr.write("Copyright (c) 2015-2017 " + my.author.name + " <" + my.author.url + ">\n")
+        process.stderr.write("Copyright (c) 2015-2018 " + my.author.name + " <" + my.author.url + ">\n")
         process.stderr.write("Licensed under " + my.license + " <http://spdx.org/licenses/" + my.license + ".html>\n")
         process.exit(0)
     }
 
-    /*  determine configuration file and/or package manager  */
-    if (argv.manager === "-" && argv.file === "-") {
-        argv.manager = "npm"
+    /*  determine configuration file  */
+    if (argv.file === "-")
         argv.file = "package.json"
-    }
-    else if (argv.file === "-")
-        argv.file = (argv.manager === "npm" ? "package.json" : "bower.json")
-    else if (argv.manager === "-")
-        argv.manager = (argv.file.match(/bower/) ? "bower" : "npm")
 
     /*  read old configuration file  */
     if (!fs.existsSync(argv.file))
         throw "cannot find NPM package configuration file under path \"" + argv.file + "\""
-    var pkgData = fs.readFileSync(argv.file, { encoding: "utf8" })
-    var pkgDataOld = pkgData
+    let pkgData = fs.readFileSync(argv.file, { encoding: "utf8" })
+    let pkgDataOld = pkgData
 
     /*  parse configuration file content  */
-    var pkg = JSON.parse(pkgData)
+    let pkg = JSON.parse(pkgData)
 
-    /*  determine package manager version  */
-    var vManager = "0.0.0"
-    if (argv.manager === "npm")
-        vManager = require("npm/package.json").version
-    else if (argv.manager === "bower")
-        vManager = require("bower/package.json").version
-    else
-        throw "invalid package manager \"" + argv.manager + "\""
-
-    /*  provide package manager and package configuration information  */
-    var table = new Table({
-        head: [
-            chalk.reset.bold("PACKAGE MANAGER"),
-            chalk.reset.bold("PACKAGE CONFIGURATION")
-        ],
-        colWidths: [ 20, 55 ],
-        style: { "padding-left": 1, "padding-right": 1, border: [ "grey" ], compact: true },
-        chars: { "left-mid": "", "mid": "", "mid-mid": "", "right-mid": "" },
-        border: [ "red" ]
-    })
-    table.push([ argv.manager + " " + vManager, argv.file ])
-    var output = table.toString()
-    if (argv.noColor)
-        output = stripAnsi(output)
-    if (!argv.quiet)
-        process.stdout.write(output + "\n")
-
-    /*  generate special variant of package.json for "npm-check-updates",
-        as it is unwilling to pickup peerDependencies, etc  */
-    let pkgOut = { dependencies: {} }
+    /*  determine the old NPM module versions (via local package.json)  */
+    let versionOld = {}
     const mixin = (name) => {
         if (typeof pkg[name] === "object")
-            Object.assign(pkgOut.dependencies, pkg[name])
+            Object.assign(versionOld, pkg[name])
     }
     mixin("optionalDependencies")
     mixin("peerDependencies")
     mixin("devDependencies")
     mixin("dependencies")
-    pkgOut = JSON.stringify(pkgOut)
 
-    /*  let "npm-check-updates" do the heavy lifting of
-        determining the latest NPM module versions  */
-    var json = yield (ncu.run({
-        json:           true,
-        jsonUpgraded:   true,
-        loglevel:       "silent",
-        packageData:    pkgOut,
-        packageManager: argv.manager,
-        greatest:       argv.greatest,
-        args:           []
-    }))
+    /*  determine the new NPM module versions (via remote package.json)  */
+    let versionNew = {}
+    let names = Object.keys(versionOld)
+    let promises = []
+    for (let i = 0; i < names.length; i++) {
+        let name = names[i]
+        promises.push(packageJson(name.toLowerCase(), {
+            allVersions: argv.greatest
+        }))
+    }
+    let results = await Promise.all(promises)
+    for (let i = 0; i < names.length; i++) {
+        let name = names[i]
+        let data = results[i]
+        if (argv.greatest) {
+            let versions = Object.keys(data.versions).sort((a, b) => {
+                return semver.rcompare(a, b)
+            })
+            versionNew[name] = versions[0]
+        }
+        else
+            versionNew[name] = data.version
+    }
 
     /*  prepare for a nice-looking table output of the dependency upgrades  */
     table = new Table({
@@ -161,29 +137,27 @@ co(function * () {
     })
 
     /*  iterate over the upgraded dependencies  */
-    var mods = Object.keys(json)
-    mods.forEach(function (mod) {
+    let updates = false
+    for (let i = 0; i < names.length; i++) {
+        let name = names[i]
+
         /*  determine new and old version  */
-        var vNew = json[mod]
-        var vOld
-        var sections = [ "dependencies", "devDependencies", "peerDependencies", "optionalDependencies" ]
-        for (var i = 0; i < sections.length; i++) {
-            if (typeof pkg[sections[i]] === "object" && typeof pkg[sections[i]][mod] === "string") {
-               vOld = pkg[sections[i]][mod]
-               break
-            }
-        }
-        if (vOld === undefined)
-            throw "old version for module \"" + mod + "\" not found"
+        let vOld = versionOld[name]
+        let vNew = versionNew[name]
+
+        /*  short-circuit processing  */
+        if (vOld === vNew)
+            continue
+        updates = true
 
         /*  determine whether module should be updated  */
-        var update = (
+        let update = (
             argv._.length === 0 ||
-            micromatch([ mod ], (argv._[0].match(/^!/) !== null ? [ "*" ] : []).concat(argv._)).length > 0
+            micromatch([ name ], (argv._[0].match(/^!/) !== null ? [ "*" ] : []).concat(argv._)).length > 0
         )
 
         /*  utility function: mark a piece of text against another one  */
-        var mark = function (color, text, other) {
+        const mark = function (color, text, other) {
             var result = diff(text, other)
             var output = ""
             result.forEach(function (chunk) {
@@ -197,23 +171,23 @@ co(function * () {
 
         /*  print the module name, new and old version  */
         if (update)
-            table.push([ chalk.reset(mod), mark("red", vNew, vOld), mark("green", vOld, vNew) ])
+            table.push([ chalk.reset(name), mark("red", vNew, vOld), mark("green", vOld, vNew) ])
         else
-            table.push([ chalk.grey(mod + " [SKIPPED]"), chalk.grey(vOld), chalk.grey(vNew) ])
+            table.push([ chalk.grey(name + " [SKIPPED]"), chalk.grey(vOld), chalk.grey(vNew) ])
 
         /*  update the configuration file content  */
         if (update) {
-            var re = new RegExp("(\"" + escRE(mod) + "\"[ \t\r\n]*:[ \t\r\n]*\")" + escRE(vOld) + "(\")", "g")
-            var pkgDataNew = pkgData.replace(re, "$1" + vNew + "$2")
+            let re = new RegExp("(\"" + escRE(name) + "\"[ \t\r\n]*:[ \t\r\n]*\")" + escRE(vOld) + "(\")", "g")
+            let pkgDataNew = pkgData.replace(re, "$1" + vNew + "$2")
             if (pkgDataNew === pkgData)
-                throw "failed to update module \"" + mod + "\" from version \"" + vOld + "\" to \"" + vNew + "\""
+                throw "failed to update module \"" + name + "\" from version \"" + vOld + "\" to \"" + vNew + "\""
             pkgData = pkgDataNew
         }
-    })
+    }
 
     /*  display results  */
     if (!argv.quiet) {
-        if (mods.length === 0) {
+        if (!updates) {
             table = new Table({
                 head: [],
                 colWidths: [ 76 ],
@@ -234,12 +208,12 @@ co(function * () {
     }
 
     /*  write new configuration file  */
-    if (mods.length > 0 && !argv.nop && pkgDataOld !== pkgData)
+    if (updates && !argv.nop && pkgDataOld !== pkgData)
         fs.writeFileSync(argv.file, pkgData, { encoding: "utf8" })
 
-}).catch(function (err) {
+})().catch((err) => {
     /*  fatal error  */
-    process.stderr.write(chalk.red("ERROR:") + " " + err + "\n")
+    process.stderr.write(chalk.red("ERROR:") + " " + err.stack + "\n")
     process.exit(1)
 })
 

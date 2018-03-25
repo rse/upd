@@ -13,11 +13,9 @@ UPD
 Abstract
 --------
 
-This is a small Command-Line Interface (CLI) around the excellent
-[`npm-check-updates`](https://www.npmjs.com/package/npm-check-updates) Node module
-for upgrading the package dependencies in an NPM `package.json` or
-Bower `bower.json` configuration file while strictly preserving the
-formatting of the existing JSON syntax.
+This is a small Command-Line Interface (CLI) for upgrading the package
+dependencies in an NPM `package.json` configuration file while strictly
+preserving the formatting of the existing JSON syntax.
 
 Example
 -------
@@ -35,7 +33,7 @@ Usage
 -----
 
 ```
-$ upd [-h] [-V] [-q] [-n] [-C] [-m <name>] [-f <file>] [-r <url>] [-g] [<pattern> ...]
+$ upd [-h] [-V] [-q] [-n] [-C] [-f <file>] [-r <url>] [-g] [<pattern> ...]
 ```
 
 - `-h`, `--help`<br/>
@@ -48,8 +46,6 @@ $ upd [-h] [-V] [-q] [-n] [-C] [-m <name>] [-f <file>] [-r <url>] [-g] [<pattern
   No operation (do not modify package configuration file).
 - `-C`, `--noColor`<br/>
   Do not use any colors in output.
-- `-m <name>`, `--manager <name>`<br/>
-  Package manager to use ("npm" or "bower").
 - `-f <file>`, `--file <file>`<br/>
   Package configuration to use ("package.json" or "bower.json").
 - `-g`, `--greatest`<br/>
