@@ -47,7 +47,7 @@ $ upd [-h] [-V] [-q] [-n] [-C] [-f <file>] [-r <url>] [-g] [<pattern> ...]
 - `-C`, `--noColor`<br/>
   Do not use any colors in output.
 - `-f <file>`, `--file <file>`<br/>
-  Package configuration to use ("package.json" or "bower.json").
+  Package configuration to use ("package.json").
 - `-g`, `--greatest`<br/>
   Use greatest version (instead of latest stable one).
 - `<pattern>`<br/>
