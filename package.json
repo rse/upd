@@ -2,7 +2,7 @@
     "name":        "upd",
     "homepage":    "http://github.com/rse/upd",
     "description": "Upgrade Package Dependencies",
-    "version":     "2.0.3",
+    "version":     "2.0.4",
     "license":     "MIT",
     "author": {
         "name":    "Ralf S. Engelschall",
