@@ -26,7 +26,6 @@
 /*  external requirements  */
 const fs          = require("fs")
 const yargs       = require("yargs")
-const co          = require("co")
 const chalk       = require("chalk")
 const stripAnsi   = require("strip-ansi")
 const diff        = require("fast-diff")
@@ -36,6 +35,7 @@ const micromatch  = require("micromatch")
 const UN          = require("update-notifier")
 const packageJson = require("package-json")
 const semver      = require("semver")
+const JsonAsty    = require("json-asty")
 
 ;(async () => {
     /*  load my own information  */
@@ -62,6 +62,8 @@ const semver      = require("semver")
             .describe("f", "package configuration to use (\"package.json\")")
         .boolean("g").alias("g", "greatest").default("g", false)
             .describe("g", "use greatest version (instead of latest stable one)")
+        .boolean("a").alias("a", "all").default("a", false)
+            .describe("a", "show all packages (instead of just updated ones)")
         .strict()
         .showHelpOnFail(true)
         .demand(0)
@@ -88,12 +90,33 @@ const semver      = require("semver")
 
     /*  parse configuration file content  */
     let pkg = JSON.parse(pkgData)
+    let ast = JsonAsty.parse(pkgData)
 
     /*  determine the old NPM module versions (via local package.json)  */
-    let versionOld = {}
-    const mixin = (name) => {
-        if (typeof pkg[name] === "object")
-            Object.assign(versionOld, pkg[name])
+    let manifest = {}
+    const mixin = (section) => {
+        if (typeof pkg[section] === "object") {
+            Object.keys(pkg[section]).forEach((module) => {
+                let sOld = pkg[section][module]
+                let vOld = sOld
+                let state = !(
+                    argv._.length === 0 ||
+                    micromatch([ module ], (argv._[0].match(/^!/) !== null ? [ "*" ] : []).concat(argv._)).length > 0
+                ) ? "skipped" : "todo"
+                if (state === "todo") {
+                    let m = sOld.match(/^\s*(?:[\^~]\s*)?(\d+\S*)[^<>=]*$/)
+                    if (m !== null) {
+                        vOld = m[1]
+                        state = "check"
+                    }
+                    else
+                        state = "ignored"
+                }
+                if (manifest[module] === undefined)
+                    manifest[module] = []
+                manifest[module].push({ section, sOld, vOld, sNew: sOld, vNew: vOld, state })
+            })
+        }
     }
     mixin("optionalDependencies")
     mixin("peerDependencies")
@@ -101,27 +124,86 @@ const semver      = require("semver")
     mixin("dependencies")
 
     /*  determine the new NPM module versions (via remote package.json)  */
-    let versionNew = {}
-    let names = Object.keys(versionOld)
     let promises = []
-    for (let i = 0; i < names.length; i++) {
-        let name = names[i]
-        promises.push(packageJson(name.toLowerCase(), {
-            allVersions: argv.greatest
-        }))
-    }
+    let checked = {}
+    Object.keys(manifest).forEach((name) => {
+        manifest[name].forEach((spec) => {
+            if (spec.state === "check")
+                checked[name] = true
+        })
+    })
+    Object.keys(checked).forEach((name) => {
+        promises.push(packageJson(name.toLowerCase(), { allVersions: argv.greatest })
+            .then((data) => ({ name, data })))
+    })
     let results = await Promise.all(promises)
-    for (let i = 0; i < names.length; i++) {
-        let name = names[i]
-        let data = results[i]
+    let updates = false
+    for (let i = 0; i < results.length; i++) {
+        let { name, data } = results[i]
+        let vNew
         if (argv.greatest) {
             let versions = Object.keys(data.versions).sort((a, b) => {
                 return semver.rcompare(a, b)
             })
-            versionNew[name] = versions[0]
+            vNew = versions[0]
         }
         else
-            versionNew[name] = data.version
+            vNew = data.version
+        manifest[name].forEach((spec) => {
+            if (spec.state === "check") {
+                spec.vNew = vNew
+                spec.sNew = vNew
+                if (spec.vOld === spec.vNew)
+                    spec.state = "kept"
+                else {
+                    spec.state = "updated"
+                    updates = true
+
+                    /*  update manifest  */
+                    let re = new RegExp(escRE(spec.vOld), "")
+                    spec.sNew = spec.sOld.replace(re, spec.vNew)
+                    if (spec.sNew === spec.sOld)
+                        throw new Error(`failed to update module "${name}" version string "${spec.sOld}" ` +
+                            `from "${spec.vOld}" to "${spec.vNew}" in manifest`)
+
+                    /*  update package.json  */
+                    let nodes = ast.query(`
+                        .// object-member [
+                            ..// object-member [
+                                / object-member-name
+                                    / value-string [ @value == {section} ]
+                            ]
+                            &&
+                            / object-member-name
+                                / value-string [ @value == {module} ]
+                        ]
+                            / object-member-value
+                                / value-string
+                    `, {
+                        section: spec.section,
+                        module:  name
+                    })
+                    if (nodes.length !== 1)
+                        throw new Error(`failed to find module "${name}" in section "${spec.section}" ` +
+                            `of "package.json" AST`)
+                    let node = nodes[0]
+                    node.set({ text: JSON.stringify(spec.sNew), value: spec.sNew })
+                }
+            }
+        })
+    }
+
+    /*  utility function: mark a piece of text against another one  */
+    const mark = function (color, text, other) {
+        var result = diff(text, other)
+        var output = ""
+        result.forEach(function (chunk) {
+            if (chunk[0] === diff.INSERT)
+                output += chalk[color](chunk[1])
+            else if (chunk[0] === diff.EQUAL)
+                output += chunk[1]
+        })
+        return output
     }
 
     /*  prepare for a nice-looking table output of the dependency upgrades  */
@@ -136,56 +218,26 @@ const semver      = require("semver")
         chars: { "left-mid": "", "mid": "", "mid-mid": "", "right-mid": "" }
     })
 
-    /*  iterate over the upgraded dependencies  */
-    let updates = false
-    for (let i = 0; i < names.length; i++) {
-        let name = names[i]
+    /*  iterate over all the dependencies  */
+    Object.keys(manifest).forEach((name) => {
+        manifest[name].forEach((spec) => {
+            /*  short-circuit processing  */
+            if (spec.state !== "updated" && !argv.all)
+                return
 
-        /*  determine new and old version  */
-        let vOld = versionOld[name]
-        let vNew = versionNew[name]
+            /*  determine new and old version  */
+            let sOld = spec.sOld
+            let sNew = spec.sNew
 
-        /*  short-circuit processing  */
-        if (vOld === vNew)
-            continue
-        updates = true
+            /*  print the module name, new and old version  */
+            if (spec.state === "updated")
+                table.push([ chalk.reset(name), mark("red", spec.sNew, spec.sOld), mark("green", spec.sOld, spec.sNew) ])
+            else
+                table.push([ chalk.grey(`${name} [${spec.state.toUpperCase()}]`), chalk.grey(spec.sOld), chalk.grey(spec.sNew) ])
+        })
+    })
 
-        /*  determine whether module should be updated  */
-        let update = (
-            argv._.length === 0 ||
-            micromatch([ name ], (argv._[0].match(/^!/) !== null ? [ "*" ] : []).concat(argv._)).length > 0
-        )
-
-        /*  utility function: mark a piece of text against another one  */
-        const mark = function (color, text, other) {
-            var result = diff(text, other)
-            var output = ""
-            result.forEach(function (chunk) {
-                if (chunk[0] === diff.INSERT)
-                    output += chalk[color](chunk[1])
-                else if (chunk[0] === diff.EQUAL)
-                    output += chunk[1]
-            })
-            return output
-        }
-
-        /*  print the module name, new and old version  */
-        if (update)
-            table.push([ chalk.reset(name), mark("red", vNew, vOld), mark("green", vOld, vNew) ])
-        else
-            table.push([ chalk.grey(name + " [SKIPPED]"), chalk.grey(vOld), chalk.grey(vNew) ])
-
-        /*  update the configuration file content  */
-        if (update) {
-            let re = new RegExp("(\"" + escRE(name) + "\"[ \t\r\n]*:[ \t\r\n]*\")" + escRE(vOld) + "(\")", "g")
-            let pkgDataNew = pkgData.replace(re, "$1" + vNew + "$2")
-            if (pkgDataNew === pkgData)
-                throw "failed to update module \"" + name + "\" from version \"" + vOld + "\" to \"" + vNew + "\""
-            pkgData = pkgDataNew
-        }
-    }
-
-    /*  display results  */
+    /*  display total results  */
     if (!argv.quiet) {
         if (!updates) {
             table = new Table({
@@ -208,8 +260,10 @@ const semver      = require("semver")
     }
 
     /*  write new configuration file  */
-    if (updates && !argv.nop && pkgDataOld !== pkgData)
+    if (updates && !argv.nop) {
+        pkgData = JsonAsty.unparse(ast)
         fs.writeFileSync(argv.file, pkgData, { encoding: "utf8" })
+    }
 
 })().catch((err) => {
     /*  fatal error  */
