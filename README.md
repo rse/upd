@@ -33,7 +33,7 @@ Usage
 -----
 
 ```
-$ upd [-h] [-V] [-q] [-n] [-C] [-f <file>] [-r <url>] [-g] [<pattern> ...]
+$ upd [-h] [-V] [-q] [-n] [-C] [-f <file>] [-g] [-a] [<pattern> ...]
 ```
 
 - `-h`, `--help`<br/>
@@ -50,8 +50,11 @@ $ upd [-h] [-V] [-q] [-n] [-C] [-f <file>] [-r <url>] [-g] [<pattern> ...]
   Package configuration to use ("package.json").
 - `-g`, `--greatest`<br/>
   Use greatest version (instead of latest stable one).
+- `-a`, `--all`<br/>
+  Show all packages (instead of just updated ones).
 - `<pattern>`<br/>
-  Positive or negative (if prefixed with `!`) Glob pattern for matching names of dependencies to update.
+  Positive or negative (if prefixed with `!`) Glob pattern for matching
+  names of dependencies to update.
 
 License
 -------
