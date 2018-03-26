@@ -33,7 +33,11 @@
     "dependencies" : {
         "yargs":                "11.0.0",
         "semver":               "5.5.0",
-        "package-json":         "4.0.1",
+        "url":                  "0.11.0",
+        "got":                  "8.3.0",
+        "caw":                  "2.0.1",
+        "registry-url":         "3.1.0",
+        "registry-auth-token":  "3.3.2",
         "update-notifier":      "2.4.0",
         "fast-diff":            "1.1.2",
         "cli-table":            "0.3.1",

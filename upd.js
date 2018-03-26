@@ -24,18 +24,22 @@
 */
 
 /*  external requirements  */
-const fs          = require("fs")
-const yargs       = require("yargs")
-const chalk       = require("chalk")
-const stripAnsi   = require("strip-ansi")
-const diff        = require("fast-diff")
-const Table       = require("cli-table")
-const escRE       = require("escape-string-regexp")
-const micromatch  = require("micromatch")
-const UN          = require("update-notifier")
-const packageJson = require("package-json")
-const semver      = require("semver")
-const JsonAsty    = require("json-asty")
+const fs                = require("fs")
+const yargs             = require("yargs")
+const chalk             = require("chalk")
+const stripAnsi         = require("strip-ansi")
+const diff              = require("fast-diff")
+const Table             = require("cli-table")
+const escRE             = require("escape-string-regexp")
+const micromatch        = require("micromatch")
+const UN                = require("update-notifier")
+const semver            = require("semver")
+const JsonAsty          = require("json-asty")
+const url               = require("url")
+const got               = require("got")
+const caw               = require("caw")
+const registryUrl       = require("registry-url")
+const registryAuthToken = require("registry-auth-token")
 
 ;(async () => {
     /*  load my own information  */
@@ -123,6 +127,32 @@ const JsonAsty    = require("json-asty")
     mixin("devDependencies")
     mixin("dependencies")
 
+    /*  helper function for retrieving package.json from NPM registry  */
+    const fetchPackageInfo = (name) => {
+        /*  determine NPM registry URL  */
+        const scope  = name.split("/")[0]
+        const regUrl = registryUrl(scope)
+        const pkgUrl = url.resolve(regUrl, encodeURIComponent(name).replace(/^%40/, "@"))
+
+        /*  determine NPM registry HTTP request headers  */
+        const headers = {}
+        headers.accept = "application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*"
+        const authInfo = registryAuthToken(regUrl, { recursive: true })
+        if (authInfo)
+            headers.authorization = `${authInfo.type} ${authInfo.token}`
+
+        /*  fetch package information from NPM registry  */
+        return got(pkgUrl, {
+            json:    true,
+            headers: headers,
+            agent:   caw()
+        }).then((res) => res.body).catch((err) => {
+            if (err.statusCode === 404)
+                throw new Error(`package "${name}" not found`)
+            throw err
+        })
+    }
+
     /*  determine the new NPM module versions (via remote package.json)  */
     let promises = []
     let checked = {}
@@ -133,7 +163,7 @@ const JsonAsty    = require("json-asty")
         })
     })
     Object.keys(checked).forEach((name) => {
-        promises.push(packageJson(name.toLowerCase(), { allVersions: argv.greatest })
+        promises.push(fetchPackageInfo(name.toLowerCase())
             .then((data) => ({ name, data })))
     })
     let results = await Promise.all(promises)
@@ -147,8 +177,11 @@ const JsonAsty    = require("json-asty")
             })
             vNew = versions[0]
         }
-        else
-            vNew = data.version
+        else {
+            vNew = data["dist-tags"].latest
+            if (vNew === undefined)
+                throw new Error(`no "latest" version found for module "${name}"`)
+        }
         manifest[name].forEach((spec) => {
             if (spec.state === "check") {
                 spec.vNew = vNew
