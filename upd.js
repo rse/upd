@@ -104,7 +104,7 @@ const JsonAsty    = require("json-asty")
                     micromatch([ module ], (argv._[0].match(/^!/) !== null ? [ "*" ] : []).concat(argv._)).length > 0
                 ) ? "skipped" : "todo"
                 if (state === "todo") {
-                    let m = sOld.match(/^\s*(?:[\^~]\s*)?(\d+\S*)[^<>=]*$/)
+                    let m = sOld.match(/^\s*(?:[\^~]\s*)?(\d+[^<>=|\s]*)\s*$/)
                     if (m !== null) {
                         vOld = m[1]
                         state = "check"
