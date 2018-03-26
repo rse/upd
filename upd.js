@@ -222,7 +222,7 @@ const JsonAsty    = require("json-asty")
     Object.keys(manifest).forEach((name) => {
         manifest[name].forEach((spec) => {
             /*  short-circuit processing  */
-            if (spec.state !== "updated" && !argv.all)
+            if (!(spec.state === "updated" || argv.all))
                 return
 
             /*  determine new and old version  */
