@@ -203,6 +203,8 @@ const registryAuthToken = require("registry-auth-token")
                 spec.sNew = vNew
                 if (spec.vOld === spec.vNew)
                     spec.state = "kept"
+                else if (semver.gt(spec.vOld, spec.vNew))
+                    spec.state = "kept: new is older"
                 else {
                     spec.state = "updated"
                     updates = true
@@ -277,7 +279,7 @@ const registryAuthToken = require("registry-auth-token")
 
     /*  display total results  */
     if (!argv.quiet) {
-        if (!updates) {
+        if (!updates && !argv.all) {
             table = new Table({
                 head: [],
                 colWidths: [ 76 ],
