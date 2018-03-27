@@ -235,8 +235,8 @@ const registryAuthToken = require("registry-auth-token")
 
     /*  utility function: mark a piece of text against another one  */
     const mark = function (color, text, other) {
-        var result = diff(text, other)
-        var output = ""
+        let result = diff(text, other)
+        let output = ""
         result.forEach(function (chunk) {
             if (chunk[0] === diff.INSERT)
                 output += chalk[color](chunk[1])
@@ -288,27 +288,27 @@ const registryAuthToken = require("registry-auth-token")
             table.push([ module, older, newer, state ])
         })
     })
+    if (!argv.quiet && (updates || argv.all)) {
+        let output = table.toString()
+        if (argv.noColor)
+            output = stripAnsi(output)
+        process.stdout.write(output + "\n")
+    }
 
     /*  display total results  */
-    if (!argv.quiet) {
-        if (!updates && !argv.all) {
-            table = new Table({
-                head: [],
-                colWidths: [ 77 ],
-                colAligns: [ "middle" ],
-                style: { "padding-left": 1, "padding-right": 1, border: [ "grey" ], compact: true },
-                chars: { "left-mid": "", "mid": "", "mid-mid": "", "right-mid": "" }
-            })
-            table.push([ chalk.green("ALL PACKAGE DEPENDENCIES UP-TO-DATE") ])
-            output = table.toString()
-            process.stdout.write(output + "\n")
-        }
-        else {
-            output = table.toString()
-            if (argv.noColor)
-                output = stripAnsi(output)
-            process.stdout.write(output + "\n")
-        }
+    if (!argv.quiet && !(updates || argv.all)) {
+        table = new Table({
+            head: [],
+            colWidths: [ 77 ],
+            colAligns: [ "middle" ],
+            style: { "padding-left": 1, "padding-right": 1, border: [ "grey" ], compact: true },
+            chars: { "left-mid": "", "mid": "", "mid-mid": "", "right-mid": "" }
+        })
+        table.push([ chalk.green("ALL PACKAGE DEPENDENCIES UP-TO-DATE") ])
+        let output = table.toString()
+        if (argv.noColor)
+            output = stripAnsi(output)
+        process.stdout.write(output + "\n")
     }
 
     /*  write new configuration file  */
