@@ -40,6 +40,7 @@ const got               = require("got")
 const caw               = require("caw")
 const registryUrl       = require("registry-url")
 const registryAuthToken = require("registry-auth-token")
+const awaityMapLimit    = require("awaity/mapLimit").default
 
 ;(async () => {
     /*  load my own information  */
@@ -52,7 +53,7 @@ const registryAuthToken = require("registry-auth-token")
     /*  command-line option parsing  */
     let argv = yargs
         /* eslint indent: off */
-        .usage("Usage: $0 [-h] [-V] [-q] [-n] [-C] [-m <name>] [-f <file>] [-g] [<pattern> ...]")
+        .usage("Usage: $0 [-h] [-V] [-q] [-n] [-C] [-m <name>] [-f <file>] [-g] [-a] [-c <concurrency>] [<pattern> ...]")
         .help("h").alias("h", "help").default("h", false)
             .describe("h", "show usage help")
         .boolean("V").alias("V", "version").default("V", false)
@@ -69,6 +70,8 @@ const registryAuthToken = require("registry-auth-token")
             .describe("g", "use greatest version (instead of latest stable one)")
         .boolean("a").alias("a", "all").default("a", false)
             .describe("a", "show all packages (instead of just updated ones)")
+        .number("c").nargs("c", 1).alias("c", "concurrency").default("c", 8)
+            .describe("c", "number of concurrent network connections to NPM registry")
         .strict()
         .showHelpOnFail(true)
         .demand(0)
@@ -168,7 +171,6 @@ const registryAuthToken = require("registry-auth-token")
     `) : null
 
     /*  determine the new NPM module versions (via remote package.json)  */
-    let promises = []
     let checked = {}
     Object.keys(manifest).forEach((name) => {
         manifest[name].forEach((spec) => {
@@ -176,11 +178,10 @@ const registryAuthToken = require("registry-auth-token")
                 checked[name] = true
         })
     })
-    Object.keys(checked).forEach((name) => {
-        promises.push(fetchPackageInfo(name.toLowerCase())
-            .then((data) => ({ name, data })))
-    })
-    let results = await Promise.all(promises)
+    let results = await awaityMapLimit(Object.keys(checked), (name) => {
+        return fetchPackageInfo(name.toLowerCase())
+            .then((data) => ({ name, data }))
+    }, argv.concurrency)
     let updates = false
     for (let i = 0; i < results.length; i++) {
         let { name, data } = results[i]
