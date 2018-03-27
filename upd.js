@@ -51,6 +51,7 @@ const registryAuthToken = require("registry-auth-token")
 
     /*  command-line option parsing  */
     let argv = yargs
+        /* eslint indent: off */
         .usage("Usage: $0 [-h] [-V] [-q] [-n] [-C] [-m <name>] [-f <file>] [-g] [<pattern> ...]")
         .help("h").alias("h", "help").default("h", false)
             .describe("h", "show usage help")
@@ -88,9 +89,8 @@ const registryAuthToken = require("registry-auth-token")
 
     /*  read old configuration file  */
     if (!fs.existsSync(argv.file))
-        throw "cannot find NPM package configuration file under path \"" + argv.file + "\""
+        throw new Error(`cannot find NPM package configuration file under path "${argv.file}"`)
     let pkgData = fs.readFileSync(argv.file, { encoding: "utf8" })
-    let pkgDataOld = pkgData
 
     /*  parse configuration file content  */
     let pkg = JSON.parse(pkgData)
@@ -103,10 +103,9 @@ const registryAuthToken = require("registry-auth-token")
             Object.keys(pkg[section]).forEach((module) => {
                 let sOld = pkg[section][module]
                 let vOld = sOld
-                let state = !(
-                    argv._.length === 0 ||
-                    micromatch([ module ], (argv._[0].match(/^!/) !== null ? [ "*" ] : []).concat(argv._)).length > 0
-                ) ? "ignored" : "todo"
+                let state = !(argv._.length === 0
+                    || micromatch([ module ], (argv._[0].match(/^!/) !== null ?
+                        [ "*" ] : []).concat(argv._)).length > 0) ? "ignored" : "todo"
                 if (state === "todo") {
                     let m = sOld.match(/^\s*(?:[\^~]\s*)?(\d+[^<>=|\s]*)\s*$/)
                     if (m !== null) {
@@ -224,7 +223,7 @@ const registryAuthToken = require("registry-auth-token")
                         })
                         if (nodes.length !== 1)
                             throw new Error(`failed to find module "${name}" in section "${spec.section}" ` +
-                                `of "package.json" AST`)
+                                "of \"package.json\" AST")
                         let node = nodes[0]
                         node.set({ text: JSON.stringify(spec.sNew), value: spec.sNew })
                     }
@@ -247,12 +246,12 @@ const registryAuthToken = require("registry-auth-token")
     }
 
     /*  prepare for a nice-looking table output of the dependency upgrades  */
-    table = new Table({
+    let table = new Table({
         head: [
             chalk.reset.bold("MODULE NAME"),
             chalk.reset.bold("VERSION ") + chalk.red.bold("OLD"),
             chalk.reset.bold("VERSION ") + chalk.green.bold("NEW"),
-            chalk.reset.bold("STATE"),
+            chalk.reset.bold("STATE")
         ],
         colWidths: [ 37, 14, 14, 9 ],
         style: { "padding-left": 1, "padding-right": 1, border: [ "grey" ], compact: true },
@@ -273,7 +272,7 @@ const registryAuthToken = require("registry-auth-token")
 
             /*  determine older/newer columns  */
             let older = spec.state === "updated" ?
-                mark("red",   spec.sNew, spec.sOld) :
+                mark("red", spec.sNew, spec.sOld) :
                 chalk.grey(spec.sOld)
             let newer = spec.state === "updated" ?
                 mark("green", spec.sOld, spec.sNew) :
@@ -316,7 +315,6 @@ const registryAuthToken = require("registry-auth-token")
         pkgData = JsonAsty.unparse(ast)
         fs.writeFileSync(argv.file, pkgData, { encoding: "utf8" })
     }
-
 })().catch((err) => {
     /*  fatal error  */
     process.stderr.write(chalk.red("ERROR:") + " " + err.stack + "\n")
