@@ -266,10 +266,6 @@ const registryAuthToken = require("registry-auth-token")
             if (!(spec.state === "updated" || argv.all))
                 return
 
-            /*  determine new and old version  */
-            let sOld = spec.sOld
-            let sNew = spec.sNew
-
             /*  determine module name column  */
             let module = spec.state === "updated" ?
                 chalk.reset(name) :
