@@ -191,21 +191,35 @@ const Progress          = require("progress")
         clear:      true
     })
     let results = await awaityMapLimit(Object.keys(checked), (name) => {
+        let msg = name
+        if (msg.length > 24)
+            msg = `${msg.substr(0, 19)}...`
+        if (msg.length < 24)
+            msg = (msg + (Array(24).join(" "))).substr(0, 24)
         return fetchPackageInfo(name.toLowerCase()).then((data) => {
-            let msg = name
-            if (msg.length > 24)
-                msg = `${msg.substr(0, 19)}...`
-            if (msg.length < 24)
-                msg = (msg + (Array(24).join(" "))).substr(0, 24)
             progressBar.tick(1, { msg })
             if (progressBar.complete)
                 process.stderr.write("\r")
             return { name, data }
+        }).catch((error) => {
+            progressBar.tick(1, { msg })
+            if (progressBar.complete)
+                process.stderr.write("\r")
+            return { name, error }
         })
     }, argv.concurrency)
-    let updates = false
+    let updates = 0
+    let errors  = 0
     for (let i = 0; i < results.length; i++) {
-        let { name, data } = results[i]
+        let { name, data, error } = results[i]
+        if (error && !data) {
+            manifest[name].forEach((spec) => {
+                if (spec.state === "check")
+                    spec.state = "error"
+            })
+            errors++
+            continue
+        }
         let vNew
         if (argv.greatest) {
             let versions = Object.keys(data.versions).sort((a, b) => {
@@ -228,7 +242,7 @@ const Progress          = require("progress")
                     spec.state = "kept"
                 else {
                     spec.state = "updated"
-                    updates = true
+                    updates++
 
                     /*  update manifest  */
                     let re = new RegExp(escRE(spec.vOld), "")
@@ -284,7 +298,7 @@ const Progress          = require("progress")
     Object.keys(manifest).forEach((name) => {
         manifest[name].forEach((spec) => {
             /*  short-circuit processing  */
-            if (!(spec.state === "updated" || argv.all))
+            if (!(spec.state === "updated" || spec.state === "error" || argv.all))
                 return
 
             /*  determine module name column  */
@@ -301,15 +315,19 @@ const Progress          = require("progress")
                 chalk.grey(spec.sNew)
 
             /*  determine state column  */
-            let state = spec.state === "updated" ?
-                chalk.green(spec.state) :
-                chalk.grey(spec.state)
+            let state
+            if (spec.state === "updated")
+                state = chalk.green(spec.state)
+            else if (spec.state === "error")
+                state = chalk.red(spec.state)
+            else
+                state = chalk.grey(spec.state)
 
             /*  print the module name, new and old version  */
             table.push([ module, older, newer, state ])
         })
     })
-    if (!argv.quiet && (updates || argv.all)) {
+    if (!argv.quiet && (updates || errors || argv.all)) {
         let output = table.toString()
         if (argv.noColor)
             output = stripAnsi(output)
@@ -317,7 +335,7 @@ const Progress          = require("progress")
     }
 
     /*  display total results  */
-    if (!argv.quiet && !(updates || argv.all)) {
+    if (!argv.quiet && !(updates || errors || argv.all)) {
         table = new Table({
             head: [],
             colWidths: [ 77 ],
