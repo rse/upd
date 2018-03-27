@@ -154,7 +154,7 @@ const registryAuthToken = require("registry-auth-token")
     }
 
     /*  pre-compile the package.json AST query  */
-    let astQuery = ast.compile(`
+    let astQuery = !argv.nop ? ast.compile(`
         .// object-member [
             ..// object-member [
                 / object-member-name
@@ -166,7 +166,7 @@ const registryAuthToken = require("registry-auth-token")
         ]
             / object-member-value
                 / value-string
-    `)
+    `) : null
 
     /*  determine the new NPM module versions (via remote package.json)  */
     let promises = []
@@ -215,15 +215,17 @@ const registryAuthToken = require("registry-auth-token")
                             `from "${spec.vOld}" to "${spec.vNew}" in manifest`)
 
                     /*  update package.json  */
-                    let nodes = ast.execute(astQuery, {
-                        section: spec.section,
-                        module:  name
-                    })
-                    if (nodes.length !== 1)
-                        throw new Error(`failed to find module "${name}" in section "${spec.section}" ` +
-                            `of "package.json" AST`)
-                    let node = nodes[0]
-                    node.set({ text: JSON.stringify(spec.sNew), value: spec.sNew })
+                    if (!argv.nop) {
+                        let nodes = ast.execute(astQuery, {
+                            section: spec.section,
+                            module:  name
+                        })
+                        if (nodes.length !== 1)
+                            throw new Error(`failed to find module "${name}" in section "${spec.section}" ` +
+                                `of "package.json" AST`)
+                        let node = nodes[0]
+                        node.set({ text: JSON.stringify(spec.sNew), value: spec.sNew })
+                    }
                 }
             }
         })
