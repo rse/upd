@@ -43,6 +43,7 @@ const caw               = require("caw")
 const registryUrl       = require("registry-url")
 const registryAuthToken = require("registry-auth-token")
 const awaityMapLimit    = require("awaity/mapLimit").default
+const Progress          = require("progress")
 
 ;(async () => {
     /*  load my own information  */
@@ -180,9 +181,27 @@ const awaityMapLimit    = require("awaity/mapLimit").default
                 checked[name] = true
         })
     })
+    let progressMax = Object.keys(checked).length
+    let progressBar = new Progress(`[${chalk.blue(":bar")}] ${chalk.bold(":percent")} (elapsed: :elapseds) :msg `, {
+        complete:   "#",
+        incomplete: "=",
+        width:      30,
+        total:      progressMax,
+        stream:     process.stderr,
+        clear:      true
+    })
     let results = await awaityMapLimit(Object.keys(checked), (name) => {
-        return fetchPackageInfo(name.toLowerCase())
-            .then((data) => ({ name, data }))
+        return fetchPackageInfo(name.toLowerCase()).then((data) => {
+            let msg = name
+            if (msg.length > 24)
+                msg = `${msg.substr(0, 19)}...`
+            if (msg.length < 24)
+                msg = (msg + (Array(24).join(" "))).substr(0, 24)
+            progressBar.tick(1, { msg })
+            if (progressBar.complete)
+                process.stderr.write("\r")
+            return { name, data }
+        })
     }, argv.concurrency)
     let updates = false
     for (let i = 0; i < results.length; i++) {
