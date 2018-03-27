@@ -153,6 +153,21 @@ const registryAuthToken = require("registry-auth-token")
         })
     }
 
+    /*  pre-compile the package.json AST query  */
+    let astQuery = ast.compile(`
+        .// object-member [
+            ..// object-member [
+                / object-member-name
+                    / value-string [ @value == {section} ]
+            ]
+            &&
+            / object-member-name
+                / value-string [ @value == {module} ]
+        ]
+            / object-member-value
+                / value-string
+    `)
+
     /*  determine the new NPM module versions (via remote package.json)  */
     let promises = []
     let checked = {}
@@ -200,19 +215,7 @@ const registryAuthToken = require("registry-auth-token")
                             `from "${spec.vOld}" to "${spec.vNew}" in manifest`)
 
                     /*  update package.json  */
-                    let nodes = ast.query(`
-                        .// object-member [
-                            ..// object-member [
-                                / object-member-name
-                                    / value-string [ @value == {section} ]
-                            ]
-                            &&
-                            / object-member-name
-                                / value-string [ @value == {module} ]
-                        ]
-                            / object-member-value
-                                / value-string
-                    `, {
+                    let nodes = ast.execute(astQuery, {
                         section: spec.section,
                         module:  name
                     })
