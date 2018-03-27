@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*!
-**  UPD -- Upgrade Package Dependencies (UPD)
+**  UPD -- Upgrade NPM Package Dependencies
 **  Copyright (c) 2015-2018 Ralf S. Engelschall <rse@engelschall.com>
 **
 **  Permission is hereby granted, free of charge, to any person obtaining

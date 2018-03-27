@@ -1,5 +1,5 @@
 ##
-##  UPD -- Upgrade Package Dependencies (UPD)
+##  UPD -- Upgrade NPM Package Dependencies
 ##  Copyright (c) 2004-2018 Ralf S. Engelschall <rse@engelschall.com>
 ##
 ##  Permission is hereby granted, free of charge, to any person obtaining
