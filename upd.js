@@ -23,8 +23,11 @@
 **  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-/*  external requirements  */
+/*  internal requirements  */
 const fs                = require("fs")
+const url               = require("url")
+
+/*  external requirements  */
 const yargs             = require("yargs")
 const chalk             = require("chalk")
 const stripAnsi         = require("strip-ansi")
@@ -35,7 +38,6 @@ const micromatch        = require("micromatch")
 const UN                = require("update-notifier")
 const semver            = require("semver")
 const JsonAsty          = require("json-asty")
-const url               = require("url")
 const got               = require("got")
 const caw               = require("caw")
 const registryUrl       = require("registry-url")
