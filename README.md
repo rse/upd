@@ -2,7 +2,7 @@
 UPD
 ===
 
-**Upgrade Package Dependencies**
+**Upgrade NPM Package Dependencies**
 
 <p/>
 <img src="https://nodei.co/npm/upd.png?downloads=true&stars=true" alt=""/>
@@ -13,9 +13,11 @@ UPD
 Abstract
 --------
 
-This is a small Command-Line Interface (CLI) for upgrading the package
-dependencies in an NPM `package.json` configuration file while strictly
-preserving the formatting of the existing JSON syntax.
+This is a small Command-Line Interface (CLI) for upgrading the
+JavaScript package dependencies in an Node Package Manager (NPM)
+`package.json` configuration file while strictly preserving the
+formatting of the existing JSON syntax and intentionally skipping
+version constraint formulas.
 
 Example
 -------
