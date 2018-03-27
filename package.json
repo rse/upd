@@ -2,7 +2,7 @@
     "name":        "upd",
     "homepage":    "http://github.com/rse/upd",
     "description": "Upgrade NPM Package Dependencies",
-    "version":     "2.2.4",
+    "version":     "2.2.5",
     "license":     "MIT",
     "author": {
         "name":    "Ralf S. Engelschall",
