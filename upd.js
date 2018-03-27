@@ -46,7 +46,7 @@ const registryAuthToken = require("registry-auth-token")
     const my = require("./package.json")
 
     /*  automatic update notification (with 2 days check interval)  */
-    var notifier = UN({ pkg: my, updateCheckInterval: 1000 * 60 * 60 * 24 * 2 })
+    let notifier = UN({ pkg: my, updateCheckInterval: 1000 * 60 * 60 * 24 * 2 })
     notifier.notify()
 
     /*  command-line option parsing  */
