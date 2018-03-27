@@ -106,7 +106,7 @@ const registryAuthToken = require("registry-auth-token")
                 let state = !(
                     argv._.length === 0 ||
                     micromatch([ module ], (argv._[0].match(/^!/) !== null ? [ "*" ] : []).concat(argv._)).length > 0
-                ) ? "skipped" : "todo"
+                ) ? "ignored" : "todo"
                 if (state === "todo") {
                     let m = sOld.match(/^\s*(?:[\^~]\s*)?(\d+[^<>=|\s]*)\s*$/)
                     if (m !== null) {
@@ -114,7 +114,7 @@ const registryAuthToken = require("registry-auth-token")
                         state = "check"
                     }
                     else
-                        state = "ignored"
+                        state = "skipped"
                 }
                 if (manifest[module] === undefined)
                     manifest[module] = []
@@ -204,7 +204,7 @@ const registryAuthToken = require("registry-auth-token")
                 if (spec.vOld === spec.vNew)
                     spec.state = "kept"
                 else if (semver.gt(spec.vOld, spec.vNew))
-                    spec.state = "kept: new is older"
+                    spec.state = "kept"
                 else {
                     spec.state = "updated"
                     updates = true
@@ -251,9 +251,10 @@ const registryAuthToken = require("registry-auth-token")
         head: [
             chalk.reset.bold("MODULE NAME"),
             chalk.reset.bold("VERSION ") + chalk.red.bold("OLD"),
-            chalk.reset.bold("VERSION ") + chalk.green.bold("NEW")
+            chalk.reset.bold("VERSION ") + chalk.green.bold("NEW"),
+            chalk.reset.bold("STATE"),
         ],
-        colWidths: [ 42, 16, 16 ],
+        colWidths: [ 37, 14, 14, 9 ],
         style: { "padding-left": 1, "padding-right": 1, border: [ "grey" ], compact: true },
         chars: { "left-mid": "", "mid": "", "mid-mid": "", "right-mid": "" }
     })
@@ -269,11 +270,26 @@ const registryAuthToken = require("registry-auth-token")
             let sOld = spec.sOld
             let sNew = spec.sNew
 
+            /*  determine module name column  */
+            let module = spec.state === "updated" ?
+                chalk.reset(name) :
+                chalk.grey(name)
+
+            /*  determine older/newer columns  */
+            let older = spec.state === "updated" ?
+                mark("red",   spec.sNew, spec.sOld) :
+                chalk.grey(spec.sOld)
+            let newer = spec.state === "updated" ?
+                mark("green", spec.sOld, spec.sNew) :
+                chalk.grey(spec.sNew)
+
+            /*  determine state column  */
+            let state = spec.state === "updated" ?
+                chalk.green(spec.state) :
+                chalk.grey(spec.state)
+
             /*  print the module name, new and old version  */
-            if (spec.state === "updated")
-                table.push([ chalk.reset(name), mark("red", spec.sNew, spec.sOld), mark("green", spec.sOld, spec.sNew) ])
-            else
-                table.push([ chalk.grey(`${name} [${spec.state.toUpperCase()}]`), chalk.grey(spec.sOld), chalk.grey(spec.sNew) ])
+            table.push([ module, older, newer, state ])
         })
     })
 
@@ -282,7 +298,7 @@ const registryAuthToken = require("registry-auth-token")
         if (!updates && !argv.all) {
             table = new Table({
                 head: [],
-                colWidths: [ 76 ],
+                colWidths: [ 77 ],
                 colAligns: [ "middle" ],
                 style: { "padding-left": 1, "padding-right": 1, border: [ "grey" ], compact: true },
                 chars: { "left-mid": "", "mid": "", "mid-mid": "", "right-mid": "" }
