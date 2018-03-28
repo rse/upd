@@ -26,6 +26,7 @@
 /*  internal requirements  */
 const fs                = require("fs")
 const url               = require("url")
+const childProcess      = require("child_process")
 
 /*  external requirements  */
 const yargs             = require("yargs")
@@ -44,6 +45,7 @@ const registryUrl       = require("registry-url")
 const registryAuthToken = require("registry-auth-token")
 const awaityMapLimit    = require("awaity/mapLimit").default
 const Progress          = require("progress")
+const getProxy          = require("get-proxy")
 
 ;(async () => {
     /*  load my own information  */
@@ -132,6 +134,24 @@ const Progress          = require("progress")
     mixin("devDependencies")
     mixin("dependencies")
 
+    /*  determine optional proxy (via environment variables and NPM config parameters)  */
+    let proxy = getProxy()
+    if (proxy === null) {
+        proxy = await new Promise((resolve, reject) => {
+            childProcess.exec("npm config get proxy", (error, stdout /*, stderr */) => {
+                if (error)
+                    resolve(null)
+                else {
+                    stdout = stdout.toString().replace(/\r?\n$/, "")
+                    if (stdout.match(/^https?:\/\/.+/))
+                        resolve(stdout)
+                    else
+                        resolve(null)
+                }
+            })
+        })
+    }
+
     /*  helper function for retrieving package.json from NPM registry  */
     const fetchPackageInfo = (name) => {
         /*  determine NPM registry URL  */
@@ -150,7 +170,7 @@ const Progress          = require("progress")
         return got(pkgUrl, {
             json:    true,
             headers: headers,
-            agent:   caw()
+            agent:   proxy !== null ? caw(proxy) : caw()
         }).then((res) => res.body).catch((err) => {
             if (err.statusCode === 404)
                 throw new Error(`package "${name}" not found`)
