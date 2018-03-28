@@ -180,17 +180,14 @@ const getProxy          = require("get-proxy")
 
     /*  pre-compile the package.json AST query  */
     let astQuery = !argv.nop ? ast.compile(`
-        .// object-member [
-            ..// object-member [
-                / object-member-name
-                    / value-string [ @value == {section} ]
+        .// member [
+            ..// member [
+                / string [ pos() == 1 && @value == {section} ]
             ]
             &&
-            / object-member-name
-                / value-string [ @value == {module} ]
+            / string [ pos() == 1 && @value == {module} ]
         ]
-            / object-member-value
-                / value-string
+            / * [ pos() == 2 ]
     `) : null
 
     /*  determine the new NPM module versions (via remote package.json)  */
@@ -281,7 +278,7 @@ const getProxy          = require("get-proxy")
                             throw new Error(`failed to find module "${name}" in section "${spec.section}" ` +
                                 "of \"package.json\" AST")
                         let node = nodes[0]
-                        node.set({ text: JSON.stringify(spec.sNew), value: spec.sNew })
+                        node.set({ body: JSON.stringify(spec.sNew), value: spec.sNew })
                     }
                 }
             }
