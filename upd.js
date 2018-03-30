@@ -98,36 +98,36 @@ const getProxy          = require("get-proxy")
     /*  read old configuration file  */
     if (!fs.existsSync(argv.file))
         throw new Error(`cannot find NPM package configuration file under path "${argv.file}"`)
-    let pkgData = fs.readFileSync(argv.file, { encoding: "utf8" })
+    let pkgTXT = fs.readFileSync(argv.file, { encoding: "utf8" })
 
     /*  parse configuration file content  */
-    let pkg = JSON.parse(pkgData)
-    let ast = JsonAsty.parse(pkgData)
+    let pkgOBJ = JSON.parse(pkgTXT)
+    let pkgAST = JsonAsty.parse(pkgTXT)
 
     /*  determine the old NPM module versions (via local package.json)  */
     let manifest = {}
     const mixin = (section) => {
-        if (typeof pkg[section] === "object") {
-            Object.keys(pkg[section]).forEach((module) => {
-                let sOld = pkg[section][module]
-                let vOld = sOld
-                let state = !(argv._.length === 0
-                    || micromatch([ module ], (argv._[0].match(/^!/) !== null ?
-                        [ "*" ] : []).concat(argv._)).length > 0) ? "ignored" : "todo"
-                if (state === "todo") {
-                    let m = sOld.match(/^\s*(?:[\^~]\s*)?(\d+[^<>=|\s]*)\s*$/)
-                    if (m !== null) {
-                        vOld = m[1]
-                        state = "check"
-                    }
-                    else
-                        state = "skipped"
+        if (typeof pkgOBJ[section] !== "object")
+            return
+        Object.keys(pkgOBJ[section]).forEach((module) => {
+            let sOld = pkgOBJ[section][module]
+            let vOld = sOld
+            let state = !(argv._.length === 0
+                || micromatch([ module ], (argv._[0].match(/^!/) !== null ?
+                    [ "*" ] : []).concat(argv._)).length > 0) ? "ignored" : "todo"
+            if (state === "todo") {
+                let m = sOld.match(/^\s*(?:[\^~]\s*)?(\d+[^<>=|\s]*)\s*$/)
+                if (m !== null) {
+                    vOld = m[1]
+                    state = "check"
                 }
-                if (manifest[module] === undefined)
-                    manifest[module] = []
-                manifest[module].push({ section, sOld, vOld, sNew: sOld, vNew: vOld, state })
-            })
-        }
+                else
+                    state = "skipped"
+            }
+            if (manifest[module] === undefined)
+                manifest[module] = []
+            manifest[module].push({ section, sOld, vOld, sNew: sOld, vNew: vOld, state })
+        })
     }
     mixin("optionalDependencies")
     mixin("peerDependencies")
@@ -178,8 +178,9 @@ const getProxy          = require("get-proxy")
         })
     }
 
-    /*  pre-compile the package.json AST query  */
-    let astQuery = !argv.nop ? ast.compile(`
+    /*  pre-compile the package.json AST query
+        (for locating the AST node of a module inside a particular section)  */
+    let astQuery = !argv.nop ? pkgAST.compile(`
         .// member [
             ..// member [
                 / string [ pos() == 1 && @value == {section} ]
@@ -270,7 +271,7 @@ const getProxy          = require("get-proxy")
 
                     /*  update package.json  */
                     if (!argv.nop) {
-                        let nodes = ast.execute(astQuery, {
+                        let nodes = pkgAST.execute(astQuery, {
                             section: spec.section,
                             module:  name
                         })
@@ -369,8 +370,8 @@ const getProxy          = require("get-proxy")
 
     /*  write new configuration file  */
     if (updates && !argv.nop) {
-        pkgData = JsonAsty.unparse(ast)
-        fs.writeFileSync(argv.file, pkgData, { encoding: "utf8" })
+        pkgTXT = JsonAsty.unparse(pkgAST)
+        fs.writeFileSync(argv.file, pkgTXT, { encoding: "utf8" })
     }
 })().catch((err) => {
     /*  fatal error  */
