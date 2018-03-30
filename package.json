@@ -39,6 +39,7 @@
         "progress":               "2.0.0",
         "get-proxy":              "2.1.0",
         "caw":                    "2.0.1",
+        "pretty-bytes":           "4.0.2",
         "registry-url":           "3.1.0",
         "registry-auth-token":    "3.3.2",
         "update-notifier":        "2.4.0",
@@ -48,7 +49,7 @@
         "chalk":                  "2.3.2",
         "strip-ansi":             "4.0.0",
         "micromatch":             "3.1.10",
-        "json-asty":              "0.9.3"
+        "json-asty":              "0.9.4"
     },
     "engines": {
         "node":                   ">=8.0.0"

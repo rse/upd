@@ -45,6 +45,7 @@ const registryUrl       = require("registry-url")
 const registryAuthToken = require("registry-auth-token")
 const awaityMapLimit    = require("awaity/mapLimit").default
 const Progress          = require("progress")
+const prettyBytes       = require("pretty-bytes")
 const getProxy          = require("get-proxy")
 
 ;(async () => {
@@ -168,10 +169,9 @@ const getProxy          = require("get-proxy")
 
         /*  fetch package information from NPM registry  */
         return got(pkgUrl, {
-            json:    true,
             headers: headers,
             agent:   proxy !== null ? caw(proxy) : caw()
-        }).then((res) => res.body).catch((err) => {
+        }).catch((err) => {
             if (err.statusCode === 404)
                 throw new Error(`package "${name}" not found`)
             throw err
@@ -200,7 +200,7 @@ const getProxy          = require("get-proxy")
         })
     })
     let progressMax = Object.keys(checked).length
-    let progressBar = new Progress(`[${chalk.blue(":bar")}] ${chalk.bold(":percent")} (elapsed: :elapseds) :msg `, {
+    let progressBar = new Progress(`[${chalk.blue(":bar")}] ${chalk.bold(":percent")} (:elapseds, :bytes) :msg `, {
         complete:   "#",
         incomplete: "=",
         width:      30,
@@ -208,19 +208,27 @@ const getProxy          = require("get-proxy")
         stream:     process.stderr,
         clear:      true
     })
+    let bytes = 0
     let results = await awaityMapLimit(Object.keys(checked), (name) => {
         let msg = name
         if (msg.length > 24)
             msg = `${msg.substr(0, 19)}...`
         if (msg.length < 24)
             msg = (msg + (Array(24).join(" "))).substr(0, 24)
-        return fetchPackageInfo(name.toLowerCase()).then((data) => {
-            progressBar.tick(1, { msg })
+        return fetchPackageInfo(name.toLowerCase()).then((res) => {
+            bytes += res.body.length
+            try {
+                res.body = JSON.parse(res.body)
+            }
+            catch (err) {
+                return { name, error: new Error("failed to parse JSON response") }
+            }
+            progressBar.tick(1, { bytes: prettyBytes(bytes).replace(/ /g, ""), msg })
             if (progressBar.complete)
                 process.stderr.write("\r")
-            return { name, data }
-        }).catch((error) => {
-            progressBar.tick(1, { msg })
+            return { name, data: res.body }
+        }, (error) => {
+            progressBar.tick(1, { bytes: prettyBytes(bytes).replace(/ /g, ""), msg })
             if (progressBar.complete)
                 process.stderr.write("\r")
             return { name, error }
