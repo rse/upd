@@ -200,10 +200,10 @@ const getProxy          = require("get-proxy")
         })
     })
     let progressMax = Object.keys(checked).length
-    let progressBar = new Progress(`[${chalk.blue(":bar")}] ${chalk.bold(":percent")} (:elapseds, :bytes) :msg `, {
-        complete:   "#",
-        incomplete: "=",
-        width:      30,
+    let progressBar = new Progress(`checking: ${chalk.blue(":bar")} :percent :elapseds :bytes: ${chalk.blue(":msg")} `, {
+        complete:   "\u{2588}",
+        incomplete: "\u{254c}",
+        width:      24,
         total:      progressMax,
         stream:     process.stderr,
         clear:      true
