@@ -221,7 +221,7 @@ const getProxy          = require("get-proxy")
         incomplete: "\u{254c}",
         width:      24,
         total:      progressMax,
-        stream:     process.stderr,
+        stream:     process.stdout,
         clear:      true
     })
     let bytes = 0
