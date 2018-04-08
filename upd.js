@@ -84,10 +84,10 @@ const getProxy          = require("get-proxy")
 
     /*  short-circuit processing of "-V" command-line option  */
     if (argv.version) {
-        process.stderr.write(my.name + " " + my.version + " <" + my.homepage + ">\n")
-        process.stderr.write(my.description + "\n")
-        process.stderr.write("Copyright (c) 2015-2018 " + my.author.name + " <" + my.author.url + ">\n")
-        process.stderr.write("Licensed under " + my.license + " <http://spdx.org/licenses/" + my.license + ".html>\n")
+        process.stderr.write(`${my.name} ${my.version} <${my.homepage}>\n`)
+        process.stderr.write(`${my.description}\n`)
+        process.stderr.write(`Copyright (c) 2015-2018 ${my.author.name} <${my.author.url}>\n`)
+        process.stderr.write(`Licensed under ${my.license} <http://spdx.org/licenses/${my.license}.html>\n`)
         process.exit(0)
     }
 
