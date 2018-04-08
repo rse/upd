@@ -39,8 +39,7 @@ const micromatch        = require("micromatch")
 const UN                = require("update-notifier")
 const semver            = require("semver")
 const JsonAsty          = require("json-asty")
-const got               = require("got")
-const caw               = require("caw")
+const request           = require("request")
 const registryUrl       = require("registry-url")
 const registryAuthToken = require("registry-auth-token")
 const awaityMapLimit    = require("awaity/mapLimit").default
@@ -162,19 +161,32 @@ const getProxy          = require("get-proxy")
 
         /*  determine NPM registry HTTP request headers  */
         const headers = {}
-        headers.accept = "application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*"
+        headers["User-Agent"] = `${my.name}/${my.version}`
+        headers["Accept"] = "application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*"
         const authInfo = registryAuthToken(regUrl, { recursive: true })
         if (authInfo)
-            headers.authorization = `${authInfo.type} ${authInfo.token}`
+            headers["Authorization"] = `${authInfo.type} ${authInfo.token}`
 
         /*  fetch package information from NPM registry  */
-        return got(pkgUrl, {
-            headers: headers,
-            agent:   proxy !== null ? caw(proxy) : caw()
-        }).catch((err) => {
-            if (err.statusCode === 404)
-                throw new Error(`package "${name}" not found`)
-            throw err
+        let options = {
+            method:   "GET",
+            url:      pkgUrl,
+            encoding: null,
+            headers:  headers
+        }
+        if (proxy)
+            options.proxy = proxy
+        return new Promise((resolve, reject) => {
+            request(options, (error, response, body) => {
+                if (!error && response && response.statusCode === 200)
+                    resolve(body)
+                else if (response && response.statusCode === 404)
+                    reject(new Error(`package "${name}" not found`))
+                else if (error)
+                    reject(`download failed: ${error}`)
+                else
+                    reject(`unknown internal error`)
+            })
         })
     }
 
@@ -215,10 +227,10 @@ const getProxy          = require("get-proxy")
             msg = `${msg.substr(0, 19)}...`
         if (msg.length < 24)
             msg = (msg + (Array(24).join(" "))).substr(0, 24)
-        return fetchPackageInfo(name.toLowerCase()).then((res) => {
-            bytes += res.body.length
+        return fetchPackageInfo(name.toLowerCase()).then((body) => {
+            bytes += body.length
             try {
-                res.body = JSON.parse(res.body)
+                body = JSON.parse(body)
             }
             catch (err) {
                 return { name, error: new Error("failed to parse JSON response") }
@@ -226,7 +238,7 @@ const getProxy          = require("get-proxy")
             progressBar.tick(1, { bytes: prettyBytes(bytes).replace(/ /g, ""), msg })
             if (progressBar.complete)
                 process.stderr.write("\r")
-            return { name, data: res.body }
+            return { name, data: body }
         }, (error) => {
             progressBar.tick(1, { bytes: prettyBytes(bytes).replace(/ /g, ""), msg })
             if (progressBar.complete)
