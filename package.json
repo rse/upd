@@ -34,7 +34,7 @@
     "dependencies" : {
         "yargs":                  "11.0.0",
         "semver":                 "5.5.0",
-        "awaity":                 "0.0.31",
+        "awaity":                 "1.0.0",
         "got":                    "8.3.0",
         "progress":               "2.0.0",
         "get-proxy":              "2.1.0",
@@ -49,7 +49,7 @@
         "chalk":                  "2.3.2",
         "strip-ansi":             "4.0.0",
         "micromatch":             "3.1.10",
-        "json-asty":              "0.9.4"
+        "json-asty":              "0.9.5"
     },
     "engines": {
         "node":                   ">=8.0.0"
