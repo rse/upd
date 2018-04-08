@@ -183,9 +183,9 @@ const getProxy          = require("get-proxy")
                 else if (response && response.statusCode === 404)
                     reject(new Error(`package "${name}" not found`))
                 else if (error)
-                    reject(`download failed: ${error}`)
+                    reject(new Error(`download failed: ${error}`))
                 else
-                    reject(`unknown internal error`)
+                    reject(new Error("unknown internal error"))
             })
         })
     }
