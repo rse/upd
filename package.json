@@ -23,12 +23,12 @@
         "upd":  "./upd.js"
     },
     "devDependencies": {
-        "babel-eslint":           "8.2.2",
+        "babel-eslint":           "8.2.3",
         "eslint":                 "4.19.1",
         "eslint-config-standard": "11.0.0",
         "eslint-plugin-standard": "3.0.1",
         "eslint-plugin-promise":  "3.7.0",
-        "eslint-plugin-import":   "2.10.0",
+        "eslint-plugin-import":   "2.11.0",
         "eslint-plugin-node":     "6.0.1"
     },
     "dependencies" : {
@@ -43,7 +43,7 @@
         "pretty-bytes":           "4.0.2",
         "registry-url":           "3.1.0",
         "registry-auth-token":    "3.3.2",
-        "update-notifier":        "2.4.0",
+        "update-notifier":        "2.5.0",
         "fast-diff":              "1.1.2",
         "cli-table":              "0.3.1",
         "escape-string-regexp":   "1.0.5",
