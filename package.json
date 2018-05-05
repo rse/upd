@@ -50,7 +50,7 @@
         "chalk":                  "2.4.1",
         "strip-ansi":             "4.0.0",
         "micromatch":             "3.1.10",
-        "json-asty":              "0.9.6"
+        "json-asty":              "0.9.7"
     },
     "engines": {
         "node":                   ">=8.0.0"
