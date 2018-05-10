@@ -46,6 +46,7 @@ const awaityMapLimit    = require("awaity/mapLimit").default
 const Progress          = require("progress")
 const prettyBytes       = require("pretty-bytes")
 const getProxy          = require("get-proxy")
+const ducky             = require("ducky")
 
 ;(async () => {
     /*  load my own information  */
@@ -104,6 +105,19 @@ const getProxy          = require("get-proxy")
     /*  parse configuration file content  */
     let pkgOBJ = JSON.parse(pkgTXT)
     let pkgAST = JsonAsty.parse(pkgTXT)
+
+    /*  honor embedded command line arguments  */
+    if (pkgOBJ.upd !== undefined) {
+        let args
+        if (ducky.validate(pkgOBJ.upd, "[ string* ]"))
+            args = pkgOBJ.upd
+        else if (ducky.validate(pkgOBJ.upd, "string"))
+            args = pkgOBJ.upd.split(/\s+/)
+        else
+            throw new Error(`invalid field "upd" in configuration file "${argv.file}" ` +
+                "(expected string or array of strings)")
+        argv._ = args.concat(argv._)
+    }
 
     /*  determine the old NPM module versions (via local package.json)  */
     let manifest = {}

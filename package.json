@@ -46,6 +46,7 @@
         "update-notifier":        "2.5.0",
         "fast-diff":              "1.1.2",
         "cli-table":              "0.3.1",
+        "ducky":                  "2.6.7",
         "escape-string-regexp":   "1.0.5",
         "chalk":                  "2.4.1",
         "strip-ansi":             "4.0.0",
