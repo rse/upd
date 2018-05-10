@@ -40,7 +40,7 @@
         "get-proxy":              "2.1.0",
         "event-stream":           "3.3.4",
         "stream-wrapper":         "0.1.2",
-        "pretty-bytes":           "4.0.2",
+        "pretty-bytes":           "5.0.0",
         "registry-url":           "3.1.0",
         "registry-auth-token":    "3.3.2",
         "update-notifier":        "2.5.0",
