@@ -306,9 +306,12 @@ const npmExecute        = require("npm-execute")
                             section: spec.section,
                             module:  name
                         })
-                        if (nodes.length !== 1)
+                        if (nodes.length === 0)
                             throw new Error(`failed to find module "${name}" in section "${spec.section}" ` +
-                                "of \"package.json\" AST")
+                                "of \"package.json\" AST: no such entry found")
+                        if (nodes.length > 1)
+                            throw new Error(`failed to locate module "${name}" in section "${spec.section}" ` +
+                                "of \"package.json\" AST: multiple entries found")
                         let node = nodes[0]
                         node.set({ body: JSON.stringify(spec.sNew), value: spec.sNew })
                     }
