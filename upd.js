@@ -152,7 +152,7 @@ const npmExecute        = require("npm-execute")
     /*  determine optional proxy (via environment variables and NPM config parameters)  */
     let proxy = getProxy()
     if (proxy === null) {
-        let result = await npmExecute([ "config", "get", "proxy" ]).catch((err) => null)
+        let result = await npmExecute([ "config", "get", "proxy" ]).catch(() => null)
         if (result !== null) {
             let stdout = result.stdout.toString().replace(/\r?\n$/, "")
             if (stdout.match(/^https?:\/\/.+/))
