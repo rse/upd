@@ -26,7 +26,6 @@
 /*  internal requirements  */
 const fs                = require("fs")
 const url               = require("url")
-const childProcess      = require("child_process")
 
 /*  external requirements  */
 const yargs             = require("yargs")
@@ -47,6 +46,7 @@ const Progress          = require("progress")
 const prettyBytes       = require("pretty-bytes")
 const getProxy          = require("get-proxy")
 const ducky             = require("ducky")
+const npmExecute        = require("npm-execute")
 
 ;(async () => {
     /*  load my own information  */
@@ -152,19 +152,12 @@ const ducky             = require("ducky")
     /*  determine optional proxy (via environment variables and NPM config parameters)  */
     let proxy = getProxy()
     if (proxy === null) {
-        proxy = await new Promise((resolve, reject) => {
-            childProcess.exec("npm config get proxy", (error, stdout /*, stderr */) => {
-                if (error)
-                    resolve(null)
-                else {
-                    stdout = stdout.toString().replace(/\r?\n$/, "")
-                    if (stdout.match(/^https?:\/\/.+/))
-                        resolve(stdout)
-                    else
-                        resolve(null)
-                }
-            })
-        })
+        let result = await npmExecute([ "config", "get", "proxy" ]).catch((err) => null)
+        if (result !== null) {
+            let stdout = result.stdout.toString().replace(/\r?\n$/, "")
+            if (stdout.match(/^https?:\/\/.+/))
+                proxy = stdout
+        }
     }
 
     /*  helper function for retrieving package.json from NPM registry  */
