@@ -32,7 +32,7 @@ const yargs             = require("yargs")
 const chalk             = require("chalk")
 const stripAnsi         = require("strip-ansi")
 const diff              = require("fast-diff")
-const Table             = require("cli-table")
+const Table             = require("cli-table3")
 const escRE             = require("escape-string-regexp")
 const micromatch        = require("micromatch")
 const UN                = require("update-notifier")
@@ -391,7 +391,7 @@ const npmExecute        = require("npm-execute")
         table = new Table({
             head: [],
             colWidths: [ 77 ],
-            colAligns: [ "middle" ],
+            colAligns: [ "center" ],
             style: { "padding-left": 1, "padding-right": 1, border: [ "grey" ], compact: true },
             chars: { "left-mid": "", "mid": "", "mid-mid": "", "right-mid": "" }
         })
