@@ -23,8 +23,8 @@
         "upd":  "./upd.js"
     },
     "devDependencies": {
-        "babel-eslint":           "8.2.3",
-        "eslint":                 "4.19.1",
+        "babel-eslint":           "8.2.5",
+        "eslint":                 "5.0.0",
         "eslint-config-standard": "11.0.0",
         "eslint-plugin-standard": "3.1.0",
         "eslint-plugin-promise":  "3.8.0",
@@ -46,7 +46,7 @@
         "update-notifier":        "2.5.0",
         "fast-diff":              "1.1.2",
         "cli-table3":             "0.5.0",
-        "ducky":                  "2.6.10",
+        "ducky":                  "2.6.11",
         "escape-string-regexp":   "1.0.5",
         "chalk":                  "2.4.1",
         "strip-ansi":             "4.0.0",
