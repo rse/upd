@@ -165,7 +165,7 @@ const npmExecute        = require("npm-execute")
         /*  determine NPM registry URL  */
         const scope  = name.split("/")[0]
         const regUrl = registryUrl(scope)
-        const pkgUrl = url.resolve(regUrl, encodeURIComponent(name).replace(/^%40/, "@"))
+        const pkgUrl = new url.URL(encodeURIComponent(name).replace(/^%40/, "@"), regUrl)
 
         /*  determine NPM registry HTTP request headers  */
         const headers = {}
