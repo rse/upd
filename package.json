@@ -24,7 +24,7 @@
     },
     "devDependencies": {
         "babel-eslint":           "10.0.1",
-        "eslint":                 "5.9.0",
+        "eslint":                 "5.11.0",
         "eslint-config-standard": "12.0.0",
         "eslint-plugin-standard": "4.0.0",
         "eslint-plugin-promise":  "4.0.1",
@@ -36,7 +36,7 @@
         "semver":                 "5.6.0",
         "awaity":                 "1.0.0",
         "request":                "2.88.0",
-        "progress":               "2.0.1",
+        "progress":               "2.0.3",
         "get-proxy":              "2.1.0",
         "event-stream":           "4.0.1",
         "stream-wrapper":         "0.1.2",
@@ -46,13 +46,13 @@
         "update-notifier":        "2.5.0",
         "fast-diff":              "1.2.0",
         "cli-table3":             "0.5.1",
-        "ducky":                  "2.6.12",
+        "ducky":                  "2.7.0",
         "escape-string-regexp":   "1.0.5",
         "chalk":                  "2.4.1",
         "strip-ansi":             "5.0.0",
         "micromatch":             "3.1.10",
         "npm-execute":            "0.9.3",
-        "json-asty":              "0.9.12"
+        "json-asty":              "0.9.13"
     },
     "engines": {
         "node":                   ">=8.0.0"
