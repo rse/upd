@@ -24,12 +24,12 @@
     },
     "devDependencies": {
         "babel-eslint":           "10.0.1",
-        "eslint":                 "5.11.0",
+        "eslint":                 "5.12.0",
         "eslint-config-standard": "12.0.0",
         "eslint-plugin-standard": "4.0.0",
         "eslint-plugin-promise":  "4.0.1",
         "eslint-plugin-import":   "2.14.0",
-        "eslint-plugin-node":     "8.0.0"
+        "eslint-plugin-node":     "8.0.1"
     },
     "dependencies" : {
         "yargs":                  "12.0.5",
@@ -48,11 +48,11 @@
         "cli-table3":             "0.5.1",
         "ducky":                  "2.7.0",
         "escape-string-regexp":   "1.0.5",
-        "chalk":                  "2.4.1",
+        "chalk":                  "2.4.2",
         "strip-ansi":             "5.0.0",
         "micromatch":             "3.1.10",
         "npm-execute":            "0.9.3",
-        "json-asty":              "0.9.13"
+        "json-asty":              "0.9.14"
     },
     "engines": {
         "node":                   ">=8.0.0"
