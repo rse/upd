@@ -53,11 +53,11 @@ const npmExecute        = require("npm-execute")
     const my = require("./package.json")
 
     /*  automatic update notification (with 2 days check interval)  */
-    let notifier = UN({ pkg: my, updateCheckInterval: 1000 * 60 * 60 * 24 * 2 })
+    const notifier = UN({ pkg: my, updateCheckInterval: 1000 * 60 * 60 * 24 * 2 })
     notifier.notify()
 
     /*  command-line option parsing  */
-    let argv = yargs
+    const argv = yargs
         /* eslint indent: off */
         .usage("Usage: $0 [-h] [-V] [-q] [-n] [-C] [-m <name>] [-f <file>] [-g] [-a] [-c <concurrency>] [<pattern> ...]")
         .help("h").alias("h", "help").default("h", false)
@@ -103,8 +103,8 @@ const npmExecute        = require("npm-execute")
     let pkgTXT = fs.readFileSync(argv.file, { encoding: "utf8" })
 
     /*  parse configuration file content  */
-    let pkgOBJ = JSON.parse(pkgTXT)
-    let pkgAST = JsonAsty.parse(pkgTXT)
+    const pkgOBJ = JSON.parse(pkgTXT)
+    const pkgAST = JsonAsty.parse(pkgTXT)
 
     /*  honor embedded command line arguments  */
     if (pkgOBJ.upd !== undefined) {
@@ -120,18 +120,18 @@ const npmExecute        = require("npm-execute")
     }
 
     /*  determine the old NPM module versions (via local package.json)  */
-    let manifest = {}
+    const manifest = {}
     const mixin = (section) => {
         if (typeof pkgOBJ[section] !== "object")
             return
         Object.keys(pkgOBJ[section]).forEach((module) => {
-            let sOld = pkgOBJ[section][module]
+            const sOld = pkgOBJ[section][module]
             let vOld = sOld
             let state = !(argv._.length === 0
                 || micromatch([ module ], (argv._[0].match(/^!/) !== null ?
                     [ "*" ] : []).concat(argv._)).length > 0) ? "ignored" : "todo"
             if (state === "todo") {
-                let m = sOld.match(/^\s*(?:[\^~]\s*)?(\d+[^<>=|\s]*)\s*$/)
+                const m = sOld.match(/^\s*(?:[\^~]\s*)?(\d+[^<>=|\s]*)\s*$/)
                 if (m !== null) {
                     vOld = m[1]
                     state = "check"
@@ -152,9 +152,9 @@ const npmExecute        = require("npm-execute")
     /*  determine optional proxy (via environment variables and NPM config parameters)  */
     let proxy = getProxy()
     if (proxy === null) {
-        let result = await npmExecute([ "config", "get", "proxy" ]).catch(() => null)
+        const result = await npmExecute([ "config", "get", "proxy" ]).catch(() => null)
         if (result !== null) {
-            let stdout = result.stdout.toString().replace(/\r?\n$/, "")
+            const stdout = result.stdout.toString().replace(/\r?\n$/, "")
             if (stdout.match(/^https?:\/\/.+/))
                 proxy = stdout
         }
@@ -176,7 +176,7 @@ const npmExecute        = require("npm-execute")
             headers["Authorization"] = `${authInfo.type} ${authInfo.token}`
 
         /*  fetch package information from NPM registry  */
-        let options = {
+        const options = {
             method:   "GET",
             url:      pkgUrl,
             encoding: null,
@@ -200,7 +200,7 @@ const npmExecute        = require("npm-execute")
 
     /*  pre-compile the package.json AST query
         (for locating the AST node of a module inside a particular section)  */
-    let astQuery = !argv.nop ? pkgAST.compile(`
+    const astQuery = !argv.nop ? pkgAST.compile(`
         .// member [
             ..// member [
                 / string [ pos() == 1 && @value == {section} ]
@@ -212,18 +212,18 @@ const npmExecute        = require("npm-execute")
     `) : null
 
     /*  determine the new NPM module versions (via remote package.json)  */
-    let checked = {}
+    const checked = {}
     Object.keys(manifest).forEach((name) => {
         manifest[name].forEach((spec) => {
             if (spec.state === "check")
                 checked[name] = true
         })
     })
-    let progressMax = Object.keys(checked).length
+    const progressMax = Object.keys(checked).length
     let progressLine = `checking: ${chalk.blue(":bar")} :percent :elapseds :bytes: ${chalk.blue(":msg")} `
     if (argv.noColor)
         progressLine = stripAnsi(progressLine)
-    let progressBar = new Progress(progressLine, {
+    const progressBar = new Progress(progressLine, {
         complete:   "\u{2588}",
         incomplete: "\u{254c}",
         width:      24,
@@ -232,7 +232,7 @@ const npmExecute        = require("npm-execute")
         clear:      true
     })
     let bytes = 0
-    let results = await awaityMapLimit(Object.keys(checked), (name) => {
+    const results = await awaityMapLimit(Object.keys(checked), (name) => {
         let msg = name
         if (msg.length > 24)
             msg = `${msg.substr(0, 19)}...`
@@ -260,7 +260,7 @@ const npmExecute        = require("npm-execute")
     let updates = 0
     let errors  = 0
     for (let i = 0; i < results.length; i++) {
-        let { name, data, error } = results[i]
+        const { name, data, error } = results[i]
         if (error && !data) {
             manifest[name].forEach((spec) => {
                 if (spec.state === "check")
@@ -271,7 +271,7 @@ const npmExecute        = require("npm-execute")
         }
         let vNew
         if (argv.greatest) {
-            let versions = Object.keys(data.versions).sort((a, b) => {
+            const versions = Object.keys(data.versions).sort((a, b) => {
                 return semver.rcompare(a, b)
             })
             vNew = versions[0]
@@ -294,7 +294,7 @@ const npmExecute        = require("npm-execute")
                     updates++
 
                     /*  update manifest  */
-                    let re = new RegExp(escRE(spec.vOld), "")
+                    const re = new RegExp(escRE(spec.vOld), "")
                     spec.sNew = spec.sOld.replace(re, spec.vNew)
                     if (spec.sNew === spec.sOld)
                         throw new Error(`failed to update module "${name}" version string "${spec.sOld}" ` +
@@ -302,7 +302,7 @@ const npmExecute        = require("npm-execute")
 
                     /*  update package.json  */
                     if (!argv.nop) {
-                        let nodes = pkgAST.execute(astQuery, {
+                        const nodes = pkgAST.execute(astQuery, {
                             section: spec.section,
                             module:  name
                         })
@@ -312,7 +312,7 @@ const npmExecute        = require("npm-execute")
                         if (nodes.length > 1)
                             throw new Error(`failed to locate module "${name}" in section "${spec.section}" ` +
                                 "of \"package.json\" AST: multiple entries found")
-                        let node = nodes[0]
+                        const node = nodes[0]
                         node.set({ body: JSON.stringify(spec.sNew), value: spec.sNew })
                     }
                 }
@@ -322,7 +322,7 @@ const npmExecute        = require("npm-execute")
 
     /*  utility function: mark a piece of text against another one  */
     const mark = function (color, text, other) {
-        let result = diff(text, other)
+        const result = diff(text, other)
         let output = ""
         result.forEach(function (chunk) {
             if (chunk[0] === diff.INSERT)
@@ -343,7 +343,7 @@ const npmExecute        = require("npm-execute")
         ],
         colWidths: [ 37, 14, 14, 9 ],
         style: { "padding-left": 1, "padding-right": 1, border: [ "grey" ], compact: true },
-        chars: { "left-mid": "", "mid": "", "mid-mid": "", "right-mid": "" }
+        chars: { "left-mid": "", mid: "", "mid-mid": "", "right-mid": "" }
     })
 
     /*  iterate over all the dependencies  */
@@ -354,15 +354,15 @@ const npmExecute        = require("npm-execute")
                 return
 
             /*  determine module name column  */
-            let module = spec.state === "updated" ?
+            const module = spec.state === "updated" ?
                 chalk.reset(name) :
                 chalk.grey(name)
 
             /*  determine older/newer columns  */
-            let older = spec.state === "updated" ?
+            const older = spec.state === "updated" ?
                 mark("red", spec.sNew, spec.sOld) :
                 chalk.grey(spec.sOld)
-            let newer = spec.state === "updated" ?
+            const newer = spec.state === "updated" ?
                 mark("green", spec.sOld, spec.sNew) :
                 chalk.grey(spec.sNew)
 
@@ -393,7 +393,7 @@ const npmExecute        = require("npm-execute")
             colWidths: [ 77 ],
             colAligns: [ "center" ],
             style: { "padding-left": 1, "padding-right": 1, border: [ "grey" ], compact: true },
-            chars: { "left-mid": "", "mid": "", "mid-mid": "", "right-mid": "" }
+            chars: { "left-mid": "", mid: "", "mid-mid": "", "right-mid": "" }
         })
         table.push([ chalk.green("ALL PACKAGE DEPENDENCIES UP-TO-DATE") ])
         let output = table.toString()
