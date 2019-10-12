@@ -65,4 +65,5 @@ rules:
     space-in-parens:                     off
     array-bracket-spacing:               off
     require-atomic-updates:              off
+    dot-notation:                        off
 
