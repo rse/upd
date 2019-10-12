@@ -23,16 +23,16 @@
         "upd":  "./upd.js"
     },
     "devDependencies": {
-        "babel-eslint":           "10.0.2",
-        "eslint":                 "6.1.0",
-        "eslint-config-standard": "13.0.1",
-        "eslint-plugin-standard": "4.0.0",
+        "babel-eslint":           "10.0.3",
+        "eslint":                 "6.5.1",
+        "eslint-config-standard": "14.1.0",
+        "eslint-plugin-standard": "4.0.1",
         "eslint-plugin-promise":  "4.2.1",
         "eslint-plugin-import":   "2.18.2",
-        "eslint-plugin-node":     "9.1.0"
+        "eslint-plugin-node":     "10.0.0"
     },
     "dependencies" : {
-        "yargs":                  "13.3.0",
+        "yargs":                  "14.2.0",
         "semver":                 "6.3.0",
         "awaity":                 "1.0.0",
         "request":                "2.88.0",
