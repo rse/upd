@@ -52,7 +52,7 @@
         "strip-ansi":             "5.2.0",
         "micromatch":             "4.0.2",
         "npm-execute":            "0.9.5",
-        "json-asty":              "1.0.0"
+        "json-asty":              "1.0.1"
     },
     "engines": {
         "node":                   ">=8.0.0"
