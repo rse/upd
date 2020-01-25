@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /*!
 **  UPD -- Upgrade NPM Package Dependencies
-**  Copyright (c) 2015-2019 Dr. Ralf S. Engelschall <rse@engelschall.com>
+**  Copyright (c) 2015-2020 Dr. Ralf S. Engelschall <rse@engelschall.com>
 **
 **  Permission is hereby granted, free of charge, to any person obtaining
 **  a copy of this software and associated documentation files (the
@@ -88,7 +88,7 @@ const npmExecute        = require("npm-execute")
     if (argv.version) {
         process.stderr.write(`${my.name} ${my.version} <${my.homepage}>\n`)
         process.stderr.write(`${my.description}\n`)
-        process.stderr.write(`Copyright (c) 2015-2018 ${my.author.name} <${my.author.url}>\n`)
+        process.stderr.write(`Copyright (c) 2015-2020 ${my.author.name} <${my.author.url}>\n`)
         process.stderr.write(`Licensed under ${my.license} <http://spdx.org/licenses/${my.license}.html>\n`)
         process.exit(0)
     }
