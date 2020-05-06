@@ -25,7 +25,6 @@
 
 /*  internal requirements  */
 const fs                = require("fs")
-const url               = require("url")
 
 /*  external requirements  */
 const yargs             = require("yargs")
@@ -38,15 +37,11 @@ const micromatch        = require("micromatch")
 const UN                = require("update-notifier")
 const semver            = require("semver")
 const JsonAsty          = require("json-asty")
-const request           = require("request")
-const registryUrl       = require("registry-url")
-const registryAuthToken = require("registry-auth-token")
+const pacote            = require("pacote")
 const awaityMapLimit    = require("awaity/mapLimit").default
 const Progress          = require("progress")
 const prettyBytes       = require("pretty-bytes")
-const getProxy          = require("get-proxy")
 const ducky             = require("ducky")
-const npmExecute        = require("npm-execute")
 
 ;(async () => {
     /*  load my own information  */
@@ -149,51 +144,16 @@ const npmExecute        = require("npm-execute")
     mixin("devDependencies")
     mixin("dependencies")
 
-    /*  determine optional proxy (via environment variables and NPM config parameters)  */
-    let proxy = getProxy()
-    if (proxy === null) {
-        const result = await npmExecute([ "config", "get", "proxy" ]).catch(() => null)
-        if (result !== null) {
-            const stdout = result.stdout.toString().replace(/\r?\n$/, "")
-            if (stdout.match(/^https?:\/\/.+/))
-                proxy = stdout
-        }
-    }
-
     /*  helper function for retrieving package.json from NPM registry  */
     const fetchPackageInfo = (name) => {
-        /*  determine NPM registry URL  */
-        const scope  = name.split("/")[0]
-        const regUrl = registryUrl(scope)
-        const pkgUrl = new url.URL(encodeURIComponent(name).replace(/^%40/, "@"), regUrl)
-
-        /*  determine NPM registry HTTP request headers  */
-        const headers = {}
-        headers["User-Agent"] = `${my.name}/${my.version}`
-        headers["Accept"] = "application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*"
-        const authInfo = registryAuthToken(regUrl, { recursive: true })
-        if (authInfo)
-            headers["Authorization"] = `${authInfo.type} ${authInfo.token}`
-
-        /*  fetch package information from NPM registry  */
-        const options = {
-            method:   "GET",
-            url:      pkgUrl,
-            encoding: null,
-            headers:  headers
-        }
-        if (proxy)
-            options.proxy = proxy
         return new Promise((resolve, reject) => {
-            request(options, (error, response, body) => {
-                if (!error && response && response.statusCode === 200)
-                    resolve(body)
-                else if (response && response.statusCode === 404)
-                    reject(new Error(`package "${name}" not found`))
-                else if (error)
-                    reject(new Error(`download failed: ${error}`))
-                else
-                    reject(new Error("unknown internal error"))
+            pacote.packument(name, {
+                userAgent: `${my.name}/${my.version}`,
+                timeout: 20 * 1000
+            }).then((data) => {
+                resolve(data)
+            }).catch((err) => {
+                reject(new Error(`package information retrival failed: ${err}`))
             })
         })
     }
@@ -239,13 +199,7 @@ const npmExecute        = require("npm-execute")
         if (msg.length < 24)
             msg = (msg + (Array(24).join(" "))).substr(0, 24)
         return fetchPackageInfo(name.toLowerCase()).then((body) => {
-            bytes += body.length
-            try {
-                body = JSON.parse(body)
-            }
-            catch (err) {
-                return { name, error: new Error("failed to parse JSON response") }
-            }
+            bytes += JSON.stringify(body).length
             progressBar.tick(1, { bytes: prettyBytes(bytes).replace(/ /g, ""), msg })
             if (progressBar.complete)
                 process.stderr.write("\r")
