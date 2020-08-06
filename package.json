@@ -24,7 +24,7 @@
     },
     "devDependencies": {
         "babel-eslint":           "10.1.0",
-        "eslint":                 "7.4.0",
+        "eslint":                 "7.6.0",
         "eslint-config-standard": "14.1.1",
         "eslint-plugin-standard": "4.0.1",
         "eslint-plugin-promise":  "4.2.1",
@@ -32,10 +32,10 @@
         "eslint-plugin-node":     "11.1.0"
     },
     "dependencies" : {
-        "yargs":                  "15.4.0",
+        "yargs":                  "15.4.1",
         "semver":                 "7.3.2",
         "awaity":                 "1.0.0",
-        "pacote":                 "11.1.10",
+        "pacote":                 "11.1.11",
         "progress":               "2.0.3",
         "event-stream":           "4.0.1",
         "stream-wrapper":         "0.1.2",
