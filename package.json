@@ -24,31 +24,30 @@
     },
     "devDependencies": {
         "babel-eslint":           "10.1.0",
-        "eslint":                 "7.7.0",
-        "eslint-config-standard": "14.1.1",
-        "eslint-plugin-standard": "4.0.1",
+        "eslint":                 "7.17.0",
+        "eslint-config-standard": "16.0.2",
         "eslint-plugin-promise":  "4.2.1",
-        "eslint-plugin-import":   "2.22.0",
+        "eslint-plugin-import":   "2.22.1",
         "eslint-plugin-node":     "11.1.0"
     },
     "dependencies" : {
-        "yargs":                  "15.4.1",
-        "semver":                 "7.3.2",
+        "yargs":                  "16.2.0",
+        "semver":                 "7.3.4",
         "awaity":                 "1.0.0",
-        "pacote":                 "11.1.11",
+        "pacote":                 "11.1.14",
         "progress":               "2.0.3",
         "event-stream":           "4.0.1",
         "stream-wrapper":         "0.1.2",
-        "pretty-bytes":           "5.4.0",
-        "update-notifier":        "4.1.1",
+        "pretty-bytes":           "5.5.0",
+        "update-notifier":        "5.0.1",
         "fast-diff":              "1.2.0",
         "cli-table3":             "0.6.0",
-        "ducky":                  "2.7.2",
+        "ducky":                  "2.7.3",
         "escape-string-regexp":   "4.0.0",
         "chalk":                  "4.1.0",
         "strip-ansi":             "6.0.0",
         "micromatch":             "4.0.2",
-        "json-asty":              "1.0.2"
+        "json-asty":              "1.0.4"
     },
     "engines": {
         "node":                   ">=10.0.0"

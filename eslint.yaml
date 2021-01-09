@@ -66,4 +66,5 @@ rules:
     array-bracket-spacing:               off
     require-atomic-updates:              off
     dot-notation:                        off
+    multiline-ternary:                   off
 
