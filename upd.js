@@ -122,9 +122,14 @@ const ducky             = require("ducky")
         Object.keys(pkgOBJ[section]).forEach((module) => {
             const sOld = pkgOBJ[section][module]
             let vOld = sOld
-            let state = !(argv._.length === 0
-                || micromatch([ module ], (argv._[0].match(/^!/) !== null ?
-                    [ "*" ] : []).concat(argv._)).length > 0) ? "ignored" : "todo"
+            let state = !(
+                   argv._.length === 0
+                || micromatch(
+                       [ module ],
+                       (argv._[0].match(/^!/) !== null ? [ "**" ] : []).concat(argv._)
+                   ).length > 0
+            ) ? "ignored" : "todo"
+            console.log(state, module)
             if (state === "todo") {
                 const m = sOld.match(/^\s*(?:[\^~]\s*)?(\d+[^<>=|\s]*)\s*$/)
                 if (m !== null) {
