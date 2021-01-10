@@ -129,7 +129,6 @@ const ducky             = require("ducky")
                        (argv._[0].match(/^!/) !== null ? [ "**" ] : []).concat(argv._)
                    ).length > 0
             ) ? "ignored" : "todo"
-            console.log(state, module)
             if (state === "todo") {
                 const m = sOld.match(/^\s*(?:[\^~]\s*)?(\d+[^<>=|\s]*)\s*$/)
                 if (m !== null) {
