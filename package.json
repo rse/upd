@@ -24,17 +24,17 @@
     },
     "devDependencies": {
         "babel-eslint":           "10.1.0",
-        "eslint":                 "7.26.0",
-        "eslint-config-standard": "16.0.2",
-        "eslint-plugin-promise":  "4.2.1",
-        "eslint-plugin-import":   "2.22.1",
+        "eslint":                 "7.31.0",
+        "eslint-config-standard": "16.0.3",
+        "eslint-plugin-promise":  "5.1.0",
+        "eslint-plugin-import":   "2.23.4",
         "eslint-plugin-node":     "11.1.0"
     },
     "dependencies" : {
         "yargs":                  "17.0.1",
         "semver":                 "7.3.5",
         "awaity":                 "1.0.0",
-        "pacote":                 "11.3.3",
+        "pacote":                 "11.3.5",
         "progress":               "2.0.3",
         "event-stream":           "4.0.1",
         "stream-wrapper":         "0.1.2",
@@ -43,14 +43,14 @@
         "fast-diff":              "1.2.0",
         "cli-table3":             "0.6.0",
         "ducky":                  "2.7.3",
-        "escape-string-regexp":   "4.0.0",
+        "escape-string-regexp":   "5.0.0",
         "chalk":                  "4.1.1",
-        "strip-ansi":             "6.0.0",
+        "strip-ansi":             "7.0.0",
         "micromatch":             "4.0.4",
         "json-asty":              "1.0.5"
     },
     "engines": {
-        "node":                   ">=10.0.0"
+        "node":                   ">=12.0.0"
     },
     "scripts": {
         "prepublishOnly":         "eslint --config eslint.yaml upd.js"
