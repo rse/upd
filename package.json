@@ -43,9 +43,9 @@
         "fast-diff":              "1.2.0",
         "cli-table3":             "0.6.0",
         "ducky":                  "2.7.3",
-        "escape-string-regexp":   "5.0.0",
+        "escape-string-regexp":   "4.0.0",
         "chalk":                  "4.1.2",
-        "strip-ansi":             "7.0.0",
+        "strip-ansi":             "6.0.0",
         "micromatch":             "4.0.4",
         "json-asty":              "1.0.5"
     },
