@@ -23,18 +23,17 @@
         "upd":  "./upd.js"
     },
     "devDependencies": {
-        "babel-eslint":           "10.1.0",
-        "eslint":                 "7.32.0",
-        "eslint-config-standard": "16.0.3",
-        "eslint-plugin-promise":  "5.1.0",
-        "eslint-plugin-import":   "2.24.0",
+        "eslint":                 "8.12.0",
+        "eslint-config-standard": "17.0.0-1",
+        "eslint-plugin-promise":  "6.0.0",
+        "eslint-plugin-import":   "2.25.4",
         "eslint-plugin-node":     "11.1.0"
     },
     "dependencies" : {
-        "yargs":                  "17.3.1",
+        "yargs":                  "17.4.0",
         "semver":                 "7.3.5",
         "awaity":                 "1.0.0",
-        "pacote":                 "12.0.3",
+        "pacote":                 "13.0.5",
         "progress":               "2.0.3",
         "event-stream":           "4.0.1",
         "stream-wrapper":         "0.1.2",
@@ -46,7 +45,7 @@
         "escape-string-regexp":   "4.0.0",
         "chalk":                  "4.1.2",
         "strip-ansi":             "6.0.0",
-        "micromatch":             "4.0.4",
+        "micromatch":             "4.0.5",
         "json-asty":              "1.0.5"
     },
     "upd": [
