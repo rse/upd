@@ -49,11 +49,14 @@
         "json-asty":              "1.0.5"
     },
     "upd": [
+        "!pretty-bytes",
         "!escape-string-regexp",
-        "!strip-ansi"
+        "!strip-ansi",
+        "!execa",
+        "!chalk"
     ],
     "engines": {
-        "node":                   ">=12.0.0"
+        "node":                   ">=14.0.0"
     },
     "scripts": {
         "prepublishOnly":         "eslint --config eslint.yaml upd.js"
