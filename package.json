@@ -23,24 +23,24 @@
         "upd":  "./upd.js"
     },
     "devDependencies": {
-        "eslint":                 "8.12.0",
-        "eslint-config-standard": "17.0.0-1",
-        "eslint-plugin-promise":  "6.0.0",
-        "eslint-plugin-import":   "2.25.4",
+        "eslint":                 "8.31.0",
+        "eslint-config-standard": "17.0.0",
+        "eslint-plugin-promise":  "6.1.1",
+        "eslint-plugin-import":   "2.26.0",
         "eslint-plugin-node":     "11.1.0"
     },
     "dependencies" : {
-        "yargs":                  "17.4.0",
-        "semver":                 "7.3.5",
+        "yargs":                  "17.6.2",
+        "semver":                 "7.3.8",
         "awaity":                 "1.0.0",
-        "pacote":                 "13.0.5",
+        "pacote":                 "15.0.8",
         "progress":               "2.0.3",
         "event-stream":           "4.0.1",
         "stream-wrapper":         "0.1.2",
         "pretty-bytes":           "5.6.0",
         "update-notifier":        "5.1.0",
         "fast-diff":              "1.2.0",
-        "cli-table3":             "0.6.1",
+        "cli-table3":             "0.6.3",
         "ducky":                  "2.7.3",
         "escape-string-regexp":   "4.0.0",
         "chalk":                  "4.1.2",
@@ -53,7 +53,8 @@
         "!escape-string-regexp",
         "!strip-ansi",
         "!execa",
-        "!chalk"
+        "!chalk",
+        "!update-notifier"
     ],
     "engines": {
         "node":                   ">=14.0.0"
