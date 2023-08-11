@@ -9,6 +9,7 @@
         "email":   "rse@engelschall.com",
         "url":     "http://engelschall.com"
     },
+    "type": "commonjs",
     "keywords": [
         "upgrade", "package", "dependency", "npm", "package.json"
     ],
