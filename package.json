@@ -27,12 +27,12 @@
         "eslint":                 "8.57.0",
         "eslint-config-standard": "17.1.0",
         "eslint-plugin-promise":  "6.2.0",
-        "eslint-plugin-import":   "2.29.1",
+        "eslint-plugin-import":   "2.30.0",
         "eslint-plugin-node":     "11.1.0"
     },
     "dependencies" : {
         "yargs":                  "17.7.2",
-        "semver":                 "7.6.2",
+        "semver":                 "7.6.3",
         "awaity":                 "1.0.0",
         "pacote":                 "18.0.6",
         "progress":               "2.0.3",
@@ -44,8 +44,8 @@
         "escape-string-regexp":   "4.0.0",
         "chalk":                  "4.1.2",
         "strip-ansi":             "6.0.0",
-        "micromatch":             "4.0.7",
-        "json-asty":              "1.2.1"
+        "micromatch":             "4.0.8",
+        "json-asty":              "1.2.2"
     },
     "upd": [
         "!pretty-bytes",
