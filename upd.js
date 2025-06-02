@@ -44,7 +44,7 @@ import prettyBytes       from "pretty-bytes"
 import ducky             from "ducky"
 
 /*  load my own information  */
-import my  from "./package.json" with { type: "json" }
+import my                from "./package.json" with { type: "json" }
 
 ;(async () => {
     /*  automatic update notification (with 2 days check interval)  */
