@@ -43,10 +43,10 @@ import Progress          from "progress"
 import prettyBytes       from "pretty-bytes"
 import ducky             from "ducky"
 
-/*  load my own information  */
-import my                from "./package.json" with { type: "json" }
-
 ;(async () => {
+    /*  load my own information  */
+    const my = JSON.parse(await fs.promises.readFile(new URL("./package.json", import.meta.url)))
+
     /*  automatic update notification (with 2 days check interval)  */
     const notifier = UN({ pkg: my, updateCheckInterval: 1000 * 60 * 60 * 24 * 2 })
     notifier.notify()
