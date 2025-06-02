@@ -24,29 +24,29 @@
 */
 
 /*  internal requirements  */
-const fs                = require("fs")
+import fs                from "fs"
 
 /*  external requirements  */
-const yargs             = require("yargs")
-const chalk             = require("chalk")
-const stripAnsi         = require("strip-ansi")
-const diff              = require("fast-diff")
-const Table             = require("cli-table3")
-const escRE             = require("escape-string-regexp")
-const micromatch        = require("micromatch")
-const UN                = require("update-notifier")
-const semver            = require("semver")
-const JsonAsty          = require("json-asty")
-const pacote            = require("pacote")
-const awaityMapLimit    = require("awaity/mapLimit").default
-const Progress          = require("progress")
-const prettyBytes       = require("pretty-bytes")
-const ducky             = require("ducky")
+import yargs             from "yargs"
+import chalk             from "chalk"
+import stripAnsi         from "strip-ansi"
+import diff              from "fast-diff"
+import Table             from "cli-table3"
+import escRE             from "escape-string-regexp"
+import micromatch        from "micromatch"
+import UN                from "update-notifier"
+import semver            from "semver"
+import JsonAsty          from "json-asty"
+import pacote            from "pacote"
+import awaity            from "awaity"
+import Progress          from "progress"
+import prettyBytes       from "pretty-bytes"
+import ducky             from "ducky"
+
+/*  load my own information  */
+import my  from "./package.json" with { type: "json" }
 
 ;(async () => {
-    /*  load my own information  */
-    const my = require("./package.json")
-
     /*  automatic update notification (with 2 days check interval)  */
     const notifier = UN({ pkg: my, updateCheckInterval: 1000 * 60 * 60 * 24 * 2 })
     notifier.notify()
@@ -196,7 +196,7 @@ const ducky             = require("ducky")
         clear:      true
     })
     let bytes = 0
-    const results = await awaityMapLimit(Object.keys(checked), (name) => {
+    const results = await awaity.mapLimit(Object.keys(checked), (name) => {
         let msg = name
         if (msg.length > 24)
             msg = `${msg.substr(0, 19)}...`
