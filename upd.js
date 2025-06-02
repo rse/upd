@@ -53,7 +53,7 @@ const ducky             = require("ducky")
 
     /*  command-line option parsing  */
     const argv = yargs()
-        /* eslint indent: off */
+        /* eslint @stylistic/indent: off */
         .usage("Usage: $0 [-h] [-V] [-q] [-n] [-C] [-m <name>] [-f <file>] [-g] [-a] [-c <concurrency>] [<pattern> ...]")
         .help("h").alias("h", "help").default("h", false)
             .describe("h", "show usage help")
