@@ -326,7 +326,9 @@ const ducky             = require("ducky")
 
             /*  determine state column  */
             let state
-            if (spec.state === "updated")
+            if (argv.nop)
+                state = chalk.grey("kept")
+            else if (spec.state === "updated")
                 state = chalk.green(spec.state)
             else if (spec.state === "error")
                 state = chalk.red(spec.state)
