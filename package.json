@@ -50,7 +50,7 @@
         "json-asty":              "1.2.3"
     },
     "engines": {
-        "node":                   ">=18.0.0"
+        "node":                   ">=20.0.0"
     },
     "scripts": {
         "prepublishOnly":         "eslint --config eslint.mjs upd.js"
