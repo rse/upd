@@ -52,7 +52,7 @@ const ducky             = require("ducky")
     notifier.notify()
 
     /*  command-line option parsing  */
-    const argv = yargs
+    const argv = yargs()
         /* eslint indent: off */
         .usage("Usage: $0 [-h] [-V] [-q] [-n] [-C] [-m <name>] [-f <file>] [-g] [-a] [-c <concurrency>] [<pattern> ...]")
         .help("h").alias("h", "help").default("h", false)
