@@ -36,7 +36,7 @@
         "yargs":                  "18.0.0",
         "semver":                 "7.7.2",
         "awaity":                 "1.0.0",
-        "pacote":                 "21.0.1",
+        "pacote":                 "21.0.3",
         "progress":               "2.0.3",
         "pretty-bytes":           "7.0.1",
         "update-notifier":        "7.3.1",
