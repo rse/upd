@@ -34,7 +34,7 @@ import diff              from "fast-diff"
 import Table             from "cli-table3"
 import escRE             from "escape-string-regexp"
 import micromatch        from "micromatch"
-import UN                from "update-notifier"
+import updateNotifier    from "update-notifier"
 import semver            from "semver"
 import JsonAsty          from "json-asty"
 import pacote            from "pacote"
@@ -45,10 +45,10 @@ import ducky             from "ducky"
 
 ;(async () => {
     /*  load my own information  */
-    const my = JSON.parse(await fs.promises.readFile(new URL("./package.json", import.meta.url)))
+    const packageInfo = JSON.parse(await fs.promises.readFile(new URL("./package.json", import.meta.url)))
 
     /*  automatic update notification (with 2 days check interval)  */
-    const notifier = UN({ pkg: my, updateCheckInterval: 1000 * 60 * 60 * 24 * 2 })
+    const notifier = updateNotifier({ pkg: packageInfo, updateCheckInterval: 1000 * 60 * 60 * 24 * 2 })
     notifier.notify()
 
     /*  command-line option parsing  */
@@ -81,10 +81,10 @@ import ducky             from "ducky"
 
     /*  short-circuit processing of "-V" command-line option  */
     if (argv.version) {
-        process.stderr.write(`${my.name} ${my.version} <${my.homepage}>\n`)
-        process.stderr.write(`${my.description}\n`)
-        process.stderr.write(`Copyright (c) 2015-2025 ${my.author.name} <${my.author.url}>\n`)
-        process.stderr.write(`Licensed under ${my.license} <http://spdx.org/licenses/${my.license}.html>\n`)
+        process.stderr.write(`${packageInfo.name} ${packageInfo.version} <${packageInfo.homepage}>\n`)
+        process.stderr.write(`${packageInfo.description}\n`)
+        process.stderr.write(`Copyright (c) 2015-2025 ${packageInfo.author.name} <${packageInfo.author.url}>\n`)
+        process.stderr.write(`Licensed under ${packageInfo.license} <http://spdx.org/licenses/${packageInfo.license}.html>\n`)
         process.exit(0)
     }
 
@@ -95,7 +95,13 @@ import ducky             from "ducky"
     /*  read old configuration file  */
     if (!fs.existsSync(argv.file))
         throw new Error(`cannot find NPM package configuration file under path "${argv.file}"`)
-    let pkgTXT = fs.readFileSync(argv.file, { encoding: "utf8" })
+    let pkgTXT
+    try {
+        pkgTXT = fs.readFileSync(argv.file, { encoding: "utf8" })
+    }
+    catch (err) {
+        throw new Error(`failed to read NPM package configuration file "${argv.file}": ${err.message}`)
+    }
 
     /*  parse configuration file content  */
     const pkgOBJ = JSON.parse(pkgTXT)
@@ -119,7 +125,7 @@ import ducky             from "ducky"
     const mixin = (section) => {
         if (typeof pkgOBJ[section] !== "object")
             return
-        Object.keys(pkgOBJ[section]).forEach((module) => {
+        for (const module of Object.keys(pkgOBJ[section])) {
             const sOld = pkgOBJ[section][module]
             let vOld = sOld
             let state = !(
@@ -130,6 +136,7 @@ import ducky             from "ducky"
                    ).length > 0
             ) ? "ignored" : "todo"
             if (state === "todo") {
+                /*  extract semantic version number from dependency string  */
                 const m = sOld.match(/^\s*(?:[\^~]\s*)?(\d+[^<>=|\s]*)\s*$/)
                 if (m !== null) {
                     vOld = m[1]
@@ -141,7 +148,7 @@ import ducky             from "ducky"
             if (manifest[module] === undefined)
                 manifest[module] = []
             manifest[module].push({ section, sOld, vOld, sNew: sOld, vNew: vOld, state })
-        })
+        }
     }
     mixin("optionalDependencies")
     mixin("peerDependencies")
@@ -150,15 +157,11 @@ import ducky             from "ducky"
 
     /*  helper function for retrieving package.json from NPM registry  */
     const fetchPackageInfo = (name) => {
-        return new Promise((resolve, reject) => {
-            pacote.packument(name, {
-                userAgent: `${my.name}/${my.version}`,
-                timeout: 20 * 1000
-            }).then((data) => {
-                resolve(data)
-            }).catch((err) => {
-                reject(new Error(`package information retrival failed: ${err}`))
-            })
+        return pacote.packument(name, {
+            userAgent: `${packageInfo.name}/${packageInfo.version}`,
+            timeout: 20 * 1000
+        }).catch((err) => {
+            throw new Error(`package information retrival failed: ${err}`)
         })
     }
 
@@ -177,12 +180,12 @@ import ducky             from "ducky"
 
     /*  determine the new NPM module versions (via remote package.json)  */
     const checked = {}
-    Object.keys(manifest).forEach((name) => {
-        manifest[name].forEach((spec) => {
+    for (const name of Object.keys(manifest)) {
+        for (const spec of manifest[name]) {
             if (spec.state === "check")
                 checked[name] = true
-        })
-    })
+        }
+    }
     const progressMax = Object.keys(checked).length
     let progressLine = `checking: ${chalk.blue(":bar")} :percent :elapseds :bytes: ${chalk.blue(":msg")} `
     if (argv.noColor)
@@ -199,9 +202,8 @@ import ducky             from "ducky"
     const results = await awaity.mapLimit(Object.keys(checked), (name) => {
         let msg = name
         if (msg.length > 24)
-            msg = `${msg.substr(0, 19)}...`
-        if (msg.length < 24)
-            msg = (msg + (Array(24).join(" "))).substr(0, 24)
+            msg = `${msg.substring(0, 19)}...`
+        msg = msg.padEnd(24, " ")
         return fetchPackageInfo(name.toLowerCase()).then((body) => {
             bytes += JSON.stringify(body).length
             progressBar.tick(1, { bytes: prettyBytes(bytes).replace(/ /g, ""), msg })
@@ -239,7 +241,7 @@ import ducky             from "ducky"
             if (vNew === undefined)
                 throw new Error(`no "latest" version found for module "${name}"`)
         }
-        manifest[name].forEach((spec) => {
+        for (const spec of manifest[name]) {
             if (spec.state === "check") {
                 spec.vNew = vNew
                 spec.sNew = vNew
@@ -275,19 +277,19 @@ import ducky             from "ducky"
                     }
                 }
             }
-        })
+        }
     }
 
     /*  utility function: mark a piece of text against another one  */
-    const mark = function (color, text, other) {
+    const mark = (color, text, other) => {
         const result = diff(text, other)
         let output = ""
-        result.forEach(function (chunk) {
+        for (const chunk of result) {
             if (chunk[0] === diff.INSERT)
                 output += chalk[color](chunk[1])
             else if (chunk[0] === diff.EQUAL)
                 output += chunk[1]
-        })
+        }
         return output
     }
 
@@ -305,11 +307,11 @@ import ducky             from "ducky"
     })
 
     /*  iterate over all the dependencies  */
-    Object.keys(manifest).forEach((name) => {
-        manifest[name].forEach((spec) => {
+    for (const name of Object.keys(manifest)) {
+        for (const spec of manifest[name]) {
             /*  short-circuit processing  */
             if (!(spec.state === "updated" || spec.state === "error" || argv.all))
-                return
+                continue
 
             /*  determine module name column  */
             const module = spec.state === "updated" ?
@@ -337,8 +339,8 @@ import ducky             from "ducky"
 
             /*  print the module name, new and old version  */
             table.push([ module, older, newer, state ])
-        })
-    })
+        }
+    }
     if (!argv.quiet && (updates || errors || argv.all)) {
         let output = table.toString()
         if (argv.noColor)
@@ -365,7 +367,12 @@ import ducky             from "ducky"
     /*  write new configuration file  */
     if (updates && !argv.nop) {
         pkgTXT = JsonAsty.unparse(pkgAST)
-        fs.writeFileSync(argv.file, pkgTXT, { encoding: "utf8" })
+        try {
+            fs.writeFileSync(argv.file, pkgTXT, { encoding: "utf8" })
+        }
+        catch (err) {
+            throw new Error(`failed to write NPM package configuration file "${argv.file}": ${err.message}`)
+        }
     }
 })().catch((err) => {
     /*  fatal error  */
