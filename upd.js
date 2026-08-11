@@ -54,7 +54,7 @@ import ducky             from "ducky"
     /*  command-line option parsing  */
     const argv = yargs()
         /* eslint @stylistic/indent: off */
-        .usage("Usage: $0 [-h] [-V] [-q] [-n] [-C] [-m <name>] [-f <file>] [-g] [-a] [-c <concurrency>] [<pattern> ...]")
+        .usage("Usage: $0 [-h] [-V] [-q] [-n] [-C] [-m <name>] [-f <file>] [-g] [-a] [-c <concurrency>] [-P] [<pattern> ...]")
         .help("h").alias("h", "help").default("h", false)
             .describe("h", "show usage help")
         .boolean("V").alias("V", "version").default("V", false)
@@ -73,6 +73,8 @@ import ducky             from "ducky"
             .describe("a", "show all packages (instead of just updated ones)")
         .number("c").nargs("c", 1).alias("c", "concurrency").default("c", 8)
             .describe("c", "number of concurrent network connections to NPM registry")
+        .boolean("P").alias("P", "pin-latest").default("P", false)
+            .describe("P", "pin 'latest' tag to exact semver version")
         .version(false)
         .strict()
         .showHelpOnFail(true)
@@ -144,6 +146,7 @@ import ducky             from "ducky"
             const patterns = noPatterns ? [] : (argv._[0].match(/^!/) ? [ "**" ] : []).concat(argv._)
             const matchesPattern = noPatterns || micromatch([ module ], patterns).length > 0
             let state = matchesPattern ? "todo" : "ignored"
+            let isLatest = false
             if (state === "todo") {
                 /*  extract semantic version number from dependency string  */
                 const m = sOld.match(/^\s*(?:[\^~]\s*)?(\d+[^<>=|\s]*)\s*$/)
@@ -151,12 +154,17 @@ import ducky             from "ducky"
                     vOld = m[1]
                     state = "check"
                 }
+                else if (argv.pinLatest && /^\s*latest\s*$/i.test(sOld)) {
+                    vOld = sOld.trim()
+                    state = "check"
+                    isLatest = true
+                }
                 else
                     state = "skipped"
             }
             if (manifest[module] === undefined)
                 manifest[module] = []
-            manifest[module].push({ section, sOld, vOld, sNew: sOld, vNew: vOld, state })
+            manifest[module].push({ section, sOld, vOld, sNew: sOld, vNew: vOld, state, isLatest })
         }
     }
     mixin("optionalDependencies")
@@ -252,16 +260,22 @@ import ducky             from "ducky"
             if (spec.state === "check") {
                 spec.vNew = vNew
                 spec.sNew = vNew
+                let needsUpdate = false
                 if (spec.vOld === spec.vNew)
                     spec.state = "kept"
+                else if (spec.isLatest)
+                    needsUpdate = true
                 else if (semver.gt(spec.vOld, spec.vNew))
                     spec.state = "kept"
-                else {
+                else
+                    needsUpdate = true
+
+                if (needsUpdate) {
                     spec.state = "updated"
                     updates++
 
                     /*  update manifest  */
-                    const re = new RegExp(escRE(spec.vOld), "")
+                    const re = spec.isLatest ? /latest/i : new RegExp(escRE(spec.vOld), "")
                     spec.sNew = spec.sOld.replace(re, spec.vNew)
                     if (spec.sNew === spec.sOld)
                         throw new Error(`failed to update module "${name}" version string "${spec.sOld}" ` +

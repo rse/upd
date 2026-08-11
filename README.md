@@ -35,7 +35,7 @@ Usage
 -----
 
 ```
-$ upd [-h] [-V] [-q] [-n] [-C] [-f <file>] [-g] [-a] [-c <concurrency>] [<pattern> ...]
+$ upd [-h] [-V] [-q] [-n] [-C] [-f <file>] [-g] [-a] [-c <concurrency>] [-P] [<pattern> ...]
 ```
 
 - `-h`, `--help`<br/>
@@ -56,6 +56,8 @@ $ upd [-h] [-V] [-q] [-n] [-C] [-f <file>] [-g] [-a] [-c <concurrency>] [<patter
   Show all packages (instead of just updated ones).
 - `-c <concurrency>`, `--concurrency <concurrency>`<br/>
   Number of concurrent network connections to NPM registry.
+- `-P`, `--pin-latest`<br/>
+  Pin "latest" tag to exact version (e.g., "latest" → "1.0.0").
 - `<pattern>`<br/>
   Positive or negative (if prefixed with `!`) Glob pattern for matching
   names of dependencies to update.
